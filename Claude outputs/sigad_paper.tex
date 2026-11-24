@@ -1,0 +1,230 @@
+\documentclass[10pt,journal,compsoc]{IEEEtran}
+
+% *** CITATION PACKAGES ***
+\ifCLASSOPTIONcompsoc
+  \usepackage[nocompress]{cite}
+\else
+  \usepackage{cite}
+\fi
+
+% *** GRAPHICS ***
+\ifCLASSINFOpdf
+  \usepackage[pdftex]{graphicx}
+  \graphicspath{{./figuras/}}
+  \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  \usepackage[dvips]{graphicx}
+\fi
+
+% *** MATH ***
+\usepackage{amsmath}
+\interdisplaylinepenalty=2500
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\begin{document}
+
+\title{SiGAD: Sistema Interactivo de Guidance Contextual Explicativo\\
+Alineado al Ciclo PPDAC para Fortalecer la Alfabetización\\
+de Datos en Usuarios Novatos}
+
+\author{Javier~Wilber~Quispe~Rojas
+\IEEEcompsocitemizethanks{\IEEEcompsocthanksitem J. W. Quispe Rojas está con la
+Escuela Profesional de Ciencia de la Computación, Universidad Nacional de San
+Agustín de Arequipa (UNSA), Perú.
+\IEEEcompsocthanksitem Asesora: Ana María Cuadros Valdivia, Escuela Profesional
+de Ciencia de la Computación, UNSA.}%
+\thanks{Manuscrito en preparación, 2026.}}
+
+\markboth{Journal of \LaTeX\ Class Files,~Vol.~14, No.~8, August~2015}%
+{Quispe Rojas \MakeLowercase{\textit{et al.}}: SiGAD: Sistema Interactivo de Guidance Contextual}
+
+\IEEEtitleabstractindextext{%
+\begin{abstract}
+Los sistemas de \textit{guidance} actuales en analítica visual y ciencia de
+datos concentran su apoyo en fases puntuales del análisis —un procedimiento
+estadístico o la lectura de una visualización— sin acompañar al usuario desde
+la formulación de la pregunta hasta la interpretación final. Como
+consecuencia, los usuarios novatos no solo cometen errores de sintaxis, sino
+que fallan al elegir operaciones, manipular datos o interpretar resultados,
+limitando el desarrollo de su alfabetización de datos. Este artículo presenta
+SiGAD, un sistema interactivo de \textit{guidance} contextual explicativo
+alineado al ciclo PPDAC (Problema, Plan, Datos, Análisis y Conclusión) que
+combina cálculo determinista sobre los datos con un modelo de guiado
+pedagógico adaptativo —organizado en los niveles orientar, dirigir y
+prescribir— cuyo nivel de apoyo se gradúa y retira según el dominio estimado
+del estudiante. Se describe la arquitectura funcional del sistema y se
+propone su evaluación frente a un artículo de referencia y frente a un grupo
+de control, en términos de la calidad percibida del guiado y del efecto
+sobre el desempeño, la comprensión metodológica y la autonomía de usuarios
+novatos.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Guidance contextual, alfabetización de datos, ciclo PPDAC, guiado pedagógico
+adaptativo, andamiaje, analítica visual.
+\end{IEEEkeywords}}
+
+\maketitle
+\IEEEdisplaynontitleabstractindextext
+\IEEEpeerreviewmaketitle
+
+\IEEEraisesectionheading{\section{Introducción}\label{sec:introduccion}}
+
+\IEEEPARstart{L}{os} entornos interactivos han comenzado a ofrecer apoyo
+directo al usuario durante el análisis de datos. GuidedStats recibe un
+\textit{dataset} ya provisto por el usuario y lo guía a través de nueve pasos
+centrados en verificar supuestos y ajustar un procedimiento estadístico,
+exportando los resultados a código al finalizar \cite{zhang2024}. VIZTA, por
+su parte, se define como un asistente que ayuda a los lectores a comprender
+visualizaciones ya construidas \cite{wang2025}. En ambos casos, el apoyo se
+concentra en una fase puntual del análisis —el procedimiento estadístico o la
+lectura del gráfico— sin acompañar al usuario desde la formulación de la
+pregunta hasta la interpretación final.
+
+Estos avances responden a la necesidad de fortalecer la alfabetización de
+datos, entendida como la capacidad de recolectar, gestionar, evaluar y
+aplicar datos de manera crítica para formular y responder preguntas del
+mundo real mediante un ciclo iterativo de obtención, preparación, análisis,
+interpretación y comunicación \cite{wolff2016}. Este ciclo retoma el modelo
+PPDAC (Problema, Plan, Datos, Análisis y Conclusión), propuesto originalmente
+por Wild y Pfannkuch como marco del pensamiento estadístico
+\cite{wildpfannkuch1999} y adaptado por Wolff et al. para estructurar la
+alfabetización de datos \cite{wolff2016}. Revisiones críticas recientes
+confirman que sigue siendo un área activa de discusión, sin una definición
+única consolidada \cite{lund2025}.
+
+Pese a esto, la alfabetización de datos se promueve como competencia
+transversal desde hace más de una década, y aun así los estudiantes
+universitarios que completan cursos introductorios de análisis siguen siendo
+incapaces de vincular coherentemente sus decisiones a lo largo del proceso,
+particularmente al relacionar la preparación de datos con la validez de sus
+conclusiones \cite{wolff2016}. La evidencia reciente confirma que estas
+dificultades no se limitan a errores de sintaxis: los novatos también
+cometen errores conceptuales y metodológicos al seleccionar operaciones,
+manipular datos o interpretar salidas, sin comprender plenamente las
+consecuencias de una transformación sobre el resto del análisis
+\cite{singh2024,neuwinger2025}.
+
+Los marcos de \textit{guidance} en analítica visual, como el de Ceneda et
+al., caracterizan el grado de asistencia que un sistema puede ofrecer —desde
+orientar hasta prescribir una acción— \cite{ceneda2016}, pero se fundamentan
+en teoría de interacción visual, sin apoyarse en principios de aprendizaje
+que expliquen por qué o cuándo esa asistencia debería graduarse para
+fortalecer la competencia del usuario y no solo resolver su tarea inmediata;
+es decir, ofrecen un mecanismo técnico de asistencia sin un fundamento
+pedagógico que lo sostenga. Estos avances muestran que el \textit{guidance}
+puede incorporar explicaciones dentro del flujo de análisis, pero, como se
+señaló, se concentran en técnicas o fases puntuales y carecen de dicho
+fundamento.
+
+Esta investigación estudia el \textit{guidance} como un mecanismo
+pedagógicamente fundamentado que acompaña el ciclo completo de análisis,
+haciendo explícitas las razones metodológicas y las consecuencias de las
+decisiones entre fases. Los \textit{guidance} existentes, al enfocarse en
+técnicas específicas \cite{zhang2024,wang2025}, no acompañan todo el proceso
+de análisis, por lo que los novatos no solo cometen errores de sintaxis, sino
+que fallan al elegir operaciones, manipular datos o interpretar resultados,
+limitando su alfabetización de datos \cite{wolff2016,singh2024,neuwinger2025}.
+
+Para cerrar esta brecha se propone SiGAD (Sistema Interactivo de
+\textit{Guidance} contextual explicativo Alineado al ciclo PPDAC para
+fortalecer la Alfabetización de Datos), un sistema que combina cálculo
+determinista sobre los datos con un modelo de guiado pedagógico
+adaptativo —organizado en los niveles orientar, dirigir y prescribir— y con
+generación de lenguaje natural para explicar, en cada fase del ciclo PPDAC,
+por qué una decisión metodológica es adecuada o riesgosa. A diferencia de los
+marcos de \textit{guidance} puramente técnicos, el nivel de apoyo en SiGAD se
+ajusta según el dominio estimado del estudiante, replicando el principio de
+retiro progresivo del andamiaje (\textit{scaffolding}) propuesto por Wood,
+Bruner y Ross \cite{woodbrunerross1976} dentro de la Zona de Desarrollo
+Próximo de Vygotsky \cite{vygotsky1978}.
+
+Las contribuciones de este trabajo son las siguientes:
+\begin{itemize}
+\item Se diseña la arquitectura funcional de un sistema de guiado interactivo
+que cubre las fases Problema, Plan, Datos, Análisis y Conclusión del ciclo
+PPDAC.
+\item Se implementa un modelo de guiado pedagógico adaptativo que integra el
+intento autónomo inicial y los niveles orientar, dirigir y prescribir, con
+reglas de escalamiento y retirada de apoyo basadas en el dominio estimado del
+estudiante.
+\item Se compara el sistema propuesto con el método de un artículo de
+referencia, aplicando al grupo experimental una encuesta basada en los
+criterios de adaptabilidad, oportunidad, explicabilidad y pertinencia del
+apoyo.
+\item Se evalúa el efecto del sistema en la alfabetización en ciencia de
+datos, comparando el desempeño, la comprensión metodológica y la autonomía
+entre estudiantes que usan el sistema y estudiantes que no.
+\end{itemize}
+
+Esta investigación se orienta, en consecuencia, por las siguientes preguntas:
+¿cómo diseñar la arquitectura funcional de un sistema de guiado interactivo
+que cubra las cinco fases del ciclo PPDAC (PI1)?; ¿cómo implementar un modelo
+de guiado pedagógico adaptativo que gradúe y retire el apoyo (orientar,
+dirigir, prescribir) según el dominio estimado del estudiante (PI2)?; ¿cómo
+perciben los usuarios novatos la calidad del guiado proporcionado por el
+sistema propuesto en términos de adaptabilidad, oportunidad, explicabilidad y
+pertinencia del apoyo (PI3)?; y ¿qué diferencias se observan en el
+desempeño, la comprensión metodológica y la autonomía de los usuarios
+novatos que utilizaron el sistema propuesto frente a los que no lo utilizaron
+(PI4)?
+
+El resto de este artículo se organiza de la siguiente manera. La Sección~II
+revisa los trabajos relacionados y posiciona a SiGAD frente a sistemas
+educativos de alfabetización de datos, sistemas de alfabetización visual y
+sistemas de \textit{guidance} en analítica visual. La Sección~III describe la
+arquitectura y el modelo de guiado adaptativo propuestos. La Sección~IV
+presenta el diseño experimental y los resultados de la evaluación.
+Finalmente, la Sección~V discute las conclusiones y el trabajo futuro.
+% NOTA: las Secciones II-V se agregan en un paso posterior; por ahora este
+% archivo solo contiene Título, Resumen e Introducción.
+
+\section*{Agradecimientos}
+Los autores agradecen a la Escuela Profesional de Ciencia de la Computación
+de la Universidad Nacional de San Agustín.
+
+\begin{thebibliography}{99}
+
+\bibitem{wolff2016}
+A. Wolff, D. Gooch, J. J. Cavero~Montaner, U. Rashid, and G. Kortuem,
+``Creating an Understanding of Data Literacy for a Data-driven Society,''
+\emph{The Journal of Community Informatics}, vol.~12, no.~3, 2016.
+
+\bibitem{wildpfannkuch1999}
+C.~J. Wild and M. Pfannkuch, ``Statistical Thinking in Empirical Enquiry,''
+\emph{International Statistical Review}, vol.~67, no.~3, pp. 223--248, 1999.
+
+\bibitem{lund2025}
+[Lund et al., 2025 — completar referencia con datos exactos del artículo].
+
+\bibitem{singh2024}
+[Singh et al., 2024 — completar referencia].
+
+\bibitem{neuwinger2025}
+[Neuwinger and Riehle, 2025 — completar referencia].
+
+\bibitem{ceneda2016}
+D. Ceneda, T. Gschwandtner, T. May, S. Miksch, H.-J. Schulz, M. Streit, and
+C. Tominski, ``Characterizing Guidance in Visual Analytics,'' \emph{IEEE
+Transactions on Visualization and Computer Graphics}, vol.~23, no.~1,
+pp. 111--120, 2016.
+
+\bibitem{zhang2024}
+[Zhang et al., 2024 — GuidedStats — completar referencia].
+
+\bibitem{wang2025}
+[Wang et al., 2025 — VIZTA — completar referencia].
+
+\bibitem{woodbrunerross1976}
+D. Wood, J.~S. Bruner, and G. Ross, ``The Role of Tutoring in Problem
+Solving,'' \emph{Journal of Child Psychology and Psychiatry}, vol.~17,
+no.~2, pp. 89--100, 1976.
+
+\bibitem{vygotsky1978}
+L.~S. Vygotsky, \emph{Mind in Society: The Development of Higher
+Psychological Processes}. Cambridge, MA: Harvard University Press, 1978.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,39 @@
+{
+  "tarea": {
+    "id": "pregunta-investigacion",
+    "descripcion": "Formular y justificar una pregunta de investigación viable con el dataset disponible."
+  },
+  "nivel": 1,
+  "nombre_nivel": "Autónomo",
+  "evidencia": "Una pregunta delimitada y una justificación basada en las variables y la cobertura de los datos.",
+  "resumen_contexto": {
+    "filas": 35064,
+    "variables": [
+      "PM2.5"
+    ],
+    "vista": "evolucion",
+    "cobertura": {
+      "inicio": "2013-03-01T00:00:00",
+      "fin": "2017-02-28T23:00:00"
+    },
+    "exploraciones": [
+      "Se seleccionó la vista de evolución de PM2.5."
+    ],
+    "dificultades": [
+      "Falta delimitar el alcance temporal."
+    ],
+    "hay_respuesta": true
+  },
+  "subtareas": [],
+  "intervencion": "Formular y justificar una pregunta de investigación viable con el dataset disponible.",
+  "alternativas": [],
+  "propuesta": null,
+  "aclaraciones": [],
+  "registro": {
+    "fecha_hora": "2026-11-19T23:54:24.309323-05:00",
+    "nivel": "autonomo",
+    "csv": "Data.csv",
+    "resultado": "validado",
+    "error": null
+  }
+}

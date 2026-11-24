@@ -1,0 +1,21 @@
+:root {
+  font: 16px/1.55 system-ui, sans-serif;
+  color: #172d28;
+  background: #f2f6f3;
+}
+main { max-width: 64rem; margin: auto; padding: 1.5rem; }
+section { background: white; border: 1px solid #d5e1db; border-radius: .75rem; padding: 1rem 1.25rem; margin: 1rem 0; }
+h1, h2, h3 { line-height: 1.2; }
+a { color: #145b49; }
+label { display: block; margin-top: .75rem; font-weight: 600; }
+input, textarea, select, button { font: inherit; color: inherit; padding: .45rem .65rem; border: 1px solid #849e92; border-radius: .35rem; }
+input, textarea { box-sizing: border-box; width: 100%; }
+button { background: #145b49; color: white; margin: .45rem .35rem .45rem 0; cursor: pointer; }
+button:disabled { opacity: .55; cursor: default; }
+article { border-top: 1px solid #d5e1db; padding-bottom: .5rem; }
+details { margin-block: .55rem; }
+summary { cursor: pointer; font-weight: 600; }
+pre { background: #eef3ef; padding: .75rem; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 26rem; overflow: auto; }
+.tabla { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-block: .65rem; }
+th, td { padding: .3rem .6rem; border-bottom: 1px solid #d5e1db; text-align: left; }

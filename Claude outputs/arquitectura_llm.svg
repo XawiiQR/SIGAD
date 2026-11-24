@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="960" viewBox="0 0 1500 960" font-family="Helvetica, Arial, sans-serif" style="display:block">
+  <defs>
+    <marker id="arrowDark" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2d3748"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#276749"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1500" height="960" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="750" y="42" text-anchor="middle" font-size="24" font-weight="bold" fill="#1a202c">Capa de Guidance Contextual del Motor Pedagógico</text>
+  <text x="750" y="64" text-anchor="middle" font-size="13" font-style="italic" fill="#718096">Dónde entra Pandas, dónde entra BKT y dónde entra el LLM</text>
+
+  <!-- ============ LEFT: ENTRADAS ============ -->
+  <text x="180" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#2d3748">ENTRADAS CONTEXTUALES</text>
+
+  <rect x="40" y="120" width="280" height="80" rx="10" fill="#f7fafc" stroke="#a0aec0" stroke-width="1.8"/>
+  <text x="60" y="148" font-size="12.5" font-weight="bold" fill="#2d3748">🗄️ Estadísticas de Pandas</text>
+  <text x="60" y="167" font-size="11" fill="#4a5568">nulos, outliers, distribución,</text>
+  <text x="60" y="182" font-size="11" fill="#4a5568">correlaciones ya calculadas</text>
+
+  <rect x="40" y="215" width="280" height="80" rx="10" fill="#f7fafc" stroke="#a0aec0" stroke-width="1.8"/>
+  <text x="60" y="243" font-size="12.5" font-weight="bold" fill="#2d3748">👤 Respuesta del estudiante</text>
+  <text x="60" y="262" font-size="11" fill="#4a5568">su elección y su justificación</text>
+  <text x="60" y="277" font-size="11" fill="#4a5568">en lenguaje natural</text>
+
+  <rect x="40" y="310" width="280" height="80" rx="10" fill="#f7fafc" stroke="#a0aec0" stroke-width="1.8"/>
+  <text x="60" y="338" font-size="12.5" font-weight="bold" fill="#2d3748">🕐 Historial (BKT)</text>
+  <text x="60" y="357" font-size="11" fill="#4a5568">nivel_actual[k] y P(sabe)</text>
+  <text x="60" y="372" font-size="11" fill="#4a5568">de la habilidad evaluada</text>
+
+  <rect x="40" y="405" width="280" height="80" rx="10" fill="#f7fafc" stroke="#a0aec0" stroke-width="1.8"/>
+  <text x="60" y="433" font-size="12.5" font-weight="bold" fill="#2d3748">📖 Reglas pedagógicas</text>
+  <text x="60" y="452" font-size="11" fill="#4a5568">grados de Ceneda + funciones</text>
+  <text x="60" y="467" font-size="11" fill="#4a5568">de andamiaje por nivel</text>
+
+  <line x1="320" y1="160" x2="430" y2="330" stroke="#2d3748" stroke-width="1.6"/>
+  <line x1="320" y1="255" x2="430" y2="350" stroke="#2d3748" stroke-width="1.6"/>
+  <line x1="320" y1="350" x2="430" y2="370" stroke="#2d3748" stroke-width="1.6"/>
+  <line x1="320" y1="445" x2="430" y2="400" stroke="#2d3748" stroke-width="1.6" marker-end="url(#arrowDark)"/>
+
+  <!-- ============ CENTER: MOTOR ============ -->
+  <circle cx="750" cy="360" r="175" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="3"/>
+  <text x="750" y="255" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a365d">MOTOR DE GUIDANCE</text>
+  <text x="750" y="273" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a365d">PEDAGÓGICO</text>
+  <line x1="620" y1="288" x2="880" y2="288" stroke="#2b6cb0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <text x="640" y="318" font-size="13" fill="#2c5282">🧮 Pandas calcula</text>
+  <text x="655" y="336" font-size="11" fill="#4a5568">(nunca decide el contenido)</text>
+
+  <line x1="620" y1="348" x2="880" y2="348" stroke="#2b6cb0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <text x="640" y="378" font-size="13" fill="#2c5282">🔍 BKT detecta la brecha</text>
+  <text x="655" y="396" font-size="11" fill="#4a5568">estima P(sabe) y decide el nivel</text>
+
+  <line x1="620" y1="408" x2="880" y2="408" stroke="#2b6cb0" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <text x="640" y="438" font-size="13" font-weight="bold" fill="#553c9a">🤖 LLM interpreta y redacta</text>
+  <text x="655" y="456" font-size="11" fill="#4a5568">justificación del estudiante +</text>
+  <text x="655" y="470" font-size="11" fill="#4a5568">contenido del apoyo elegido</text>
+
+  <!-- ============ RIGHT: SALIDAS ============ -->
+  <text x="1310" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#2d3748">SALIDAS DE GUIDANCE</text>
+
+  <line x1="925" y1="300" x2="1050" y2="165" stroke="#2d3748" stroke-width="1.6" marker-end="url(#arrowDark)"/>
+  <rect x="1050" y="120" width="280" height="90" rx="10" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2"/>
+  <text x="1070" y="146" font-size="13" font-weight="bold" fill="#1a365d">🎯 ORIENTAR</text>
+  <text x="1070" y="166" font-size="11" fill="#2c5282">pista generada por el LLM a partir</text>
+  <text x="1070" y="181" font-size="11" fill="#2c5282">de las estadísticas de Pandas</text>
+  <text x="1070" y="200" font-size="10.5" font-style="italic" fill="#805ad5">🤖 contenido: LLM</text>
+
+  <line x1="925" y1="360" x2="1050" y2="360" stroke="#2d3748" stroke-width="1.6" marker-end="url(#arrowDark)"/>
+  <rect x="1050" y="315" width="280" height="90" rx="10" fill="#e6fffa" stroke="#2c7a7b" stroke-width="2"/>
+  <text x="1070" y="341" font-size="13" font-weight="bold" fill="#234e52">↔ DIRIGIR</text>
+  <text x="1070" y="361" font-size="11" fill="#285e61">alternativas curadas, redactadas</text>
+  <text x="1070" y="376" font-size="11" fill="#285e61">por el LLM para que el usuario elija</text>
+  <text x="1070" y="395" font-size="10.5" font-style="italic" fill="#805ad5">🤖 contenido: LLM</text>
+
+  <line x1="925" y1="420" x2="1050" y2="555" stroke="#2d3748" stroke-width="1.6" marker-end="url(#arrowDark)"/>
+  <rect x="1050" y="510" width="280" height="90" rx="10" fill="#fffbea" stroke="#b7791f" stroke-width="2"/>
+  <text x="1070" y="536" font-size="13" font-weight="bold" fill="#7b341e">✅ PRESCRIBIR</text>
+  <text x="1070" y="556" font-size="11" fill="#7b341e">procedimiento + justificación,</text>
+  <text x="1070" y="571" font-size="11" fill="#7b341e">redactados por el LLM</text>
+  <text x="1070" y="590" font-size="10.5" font-style="italic" fill="#805ad5">🤖 contenido: LLM</text>
+
+  <!-- ============ Decision diamond ============ -->
+  <line x1="750" y1="535" x2="750" y2="590" stroke="#2d3748" stroke-width="2"/>
+  <polygon points="750,595 890,675 750,755 610,675" fill="#fed7d7" stroke="#c53030" stroke-width="2"/>
+  <text x="750" y="660" text-anchor="middle" font-size="13" font-weight="bold" fill="#742a2a">¿P(sabe) &lt; umbral?</text>
+  <text x="750" y="678" text-anchor="middle" font-size="12" fill="#742a2a">(brecha de conocimiento</text>
+  <text x="750" y="694" text-anchor="middle" font-size="12" fill="#742a2a">o riesgo metodológico)</text>
+
+  <line x1="610" y1="675" x2="450" y2="675" stroke="#2d3748" stroke-width="2" marker-end="url(#arrowDark)"/>
+  <text x="530" y="665" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">NO</text>
+  <rect x="230" y="635" width="220" height="80" rx="10" fill="#f7fafc" stroke="#a0aec0" stroke-width="1.8"/>
+  <text x="340" y="665" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">El usuario continúa</text>
+  <text x="340" y="683" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">sin intervención</text>
+  <text x="340" y="701" text-anchor="middle" font-size="10.5" font-style="italic" fill="#718096">(Nivel 1 · Autonomía)</text>
+
+  <line x1="890" y1="675" x2="1050" y2="675" stroke="#276749" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="965" y="665" text-anchor="middle" font-size="12" font-weight="bold" fill="#276749">SÍ</text>
+  <rect x="1050" y="635" width="280" height="80" rx="10" fill="#c6f6d5" stroke="#276749" stroke-width="1.8"/>
+  <text x="1070" y="663" font-size="12" font-weight="bold" fill="#22543d">Usuario recibe el apoyo</text>
+  <text x="1070" y="682" font-size="11" fill="#22543d">(redactado por el LLM) y decide:</text>
+  <text x="1070" y="700" font-size="11" fill="#22543d">acepta, modifica o rechaza</text>
+
+  <!-- feedback loop -->
+  <line x1="1190" y1="635" x2="1190" y2="220" stroke="#276749" stroke-width="1.8" stroke-dasharray="4,3"/>
+  <line x1="1190" y1="220" x2="1150" y2="185" stroke="#276749" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arrowGreen)"/>
+  <text x="1215" y="430" font-size="11" font-style="italic" fill="#276749" transform="rotate(90 1215 430)">Retroalimentación → registra en BKT</text>
+
+  <!-- ============ Bottom process loop ============ -->
+  <rect x="230" y="800" width="1040" height="55" rx="27" fill="#1a365d"/>
+  <text x="750" y="833" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">Observar (Pandas) → Detectar (BKT) → Generar (LLM) → Decidir (usuario) → Registrar (BKT) → volver a observar</text>
+
+  <text x="750" y="890" text-anchor="middle" font-size="13" font-style="italic" fill="#4a5568">Principio de arquitectura: Pandas calcula, BKT decide el nivel, el LLM nunca calcula — solo interpreta y redacta.</text>
+
+</svg>

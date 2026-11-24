@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SiGAD · Experimento LightVA</title>
+  <link rel="stylesheet" href="/front/experimento-lightva.css">
+  <script defer src="/front/experimento-lightva.js"></script>
+</head>
+<body>
+<main>
+  <nav><a href="/">← Volver a SiGAD</a></nav>
+  <h1>Planificación contextual sobre nulos</h1>
+  <p>Fase 2 experimental · LightVA</p>
+  <p>El avance se conserva en esta pestaña hasta que la cierres o recargues, tras una hora sin solicitudes o hasta que se reinicie el servidor.</p>
+  <section>
+    <form id="inicio">
+      <p id="archivo"></p>
+      <label for="pregunta">Pregunta de análisis</label>
+      <input id="pregunta" required maxlength="500">
+      <button id="iniciar" disabled>Confirmar pregunta y generar plan</button>
+    </form>
+  </section>
+  <p id="estado" role="status"></p>
+  <section id="diagnostico" hidden>
+    <h2>Diagnóstico de nulos</h2>
+    <p id="cobertura"></p>
+    <div class="tabla" id="perfil"></div>
+    <label for="columna">Variable para explorar</label>
+    <select id="columna"></select>
+    <details><summary>Distribución de nulos de la variable</summary><div class="tabla" id="distribucion"></div></details>
+    <button id="inspeccionar" hidden>Inspeccionar filas y comparar tratamientos</button>
+    <div id="inspeccion" class="tabla"></div>
+  </section>
+  <section id="plan-panel" hidden>
+    <h2>Plan y avance</h2>
+    <div id="plan"></div>
+    <p id="ajustes"></p>
+    <button id="actualizar">Actualizar recomendaciones</button>
+    <button id="deshacer">Deshacer último tratamiento</button>
+  </section>
+  <section id="trabajo" hidden>
+    <h2 id="actividad"></h2>
+    <p id="nivel"></p>
+    <div id="apoyos"></div>
+    <button id="ayuda">Necesito ayuda</button>
+    <div id="respuesta-panel">
+      <label id="etiqueta-respuesta" for="respuesta">Respuesta</label>
+      <textarea id="respuesta" maxlength="2000" rows="4"></textarea>
+      <button id="hallazgo">Registrar hallazgo</button>
+      <div id="tratamientos">
+        <label for="tratamiento">Tratamiento elegido</label>
+        <select id="tratamiento"></select>
+        <button id="previsualizar">Previsualizar tratamiento</button>
+        <div id="previa" class="tabla"></div>
+        <button id="aplicar" hidden>Confirmar y aplicar</button>
+      </div>
+    </div>
+  </section>
+  <section id="observacion" hidden>
+    <details><summary>Historial de la sesión</summary><ol id="eventos"></ol></details>
+    <details><summary>Contexto y respuestas estructuradas del LLM</summary><div id="trazas"></div></details>
+  </section>
+</main>
+</body>
+</html>

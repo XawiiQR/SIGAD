@@ -1,0 +1,210 @@
+CONTEXTO DE MI TESIS Y ARTÍCULO: SiGAD
+
+Este documento está escrito para compartirlo con una IA junto con cuatro artículos científicos. Resume la dirección del proyecto, su estado documentado y lo que necesito discutir. Distingue la propuesta de investigación, la implementación actual y los aspectos todavía pendientes. No constituye evidencia de resultados experimentales.
+
+1. IDEA CENTRAL
+
+Estoy desarrollando SiGAD, un sistema de guiado contextual y adaptativo para apoyar a estudiantes en actividades de investigación con datos. Mi interés es que comprendan y justifiquen las decisiones que toman, y que progresivamente puedan resolver tareas con mayor autonomía.
+
+La propuesta combina visualización interactiva, andamiaje pedagógico, estimación del dominio de habilidades mediante Bayesian Knowledge Tracing (BKT), una política explícita de asistencia y un modelo de lenguaje (LLM).
+
+La población se plantea en términos de estudiantes que necesitan apoyo para investigar con datos. La población concreta, sus prerrequisitos y los criterios de selección de participantes deben precisarse en el diseño del estudio.
+
+2. PROBLEMA DE INVESTIGACIÓN
+
+Un estudiante puede tener dificultades para formular una pregunta abordable, reconocer qué permiten los datos, seleccionar variables, planificar su preparación y verificar las consecuencias de sus decisiones.
+
+Una IA puede producir una respuesta plausible o una solución, pero completar una tarea con asistencia no demuestra comprensión ni capacidad para repetirla sin apoyo. Además, las explicaciones del LLM pueden ser incorrectas y la confianza del usuario puede no corresponder con la calidad del resultado.
+
+Quiero investigar cómo organizar y graduar el guiado según el contexto y las evidencias del desempeño, manteniendo oportunidades para que el estudiante piense, decida y compruebe por sí mismo.
+
+No doy por demostrado que exista un vacío absoluto de sistemas similares. La diferencia respecto al estado del arte debe establecerse mediante revisión y comparación explícitas.
+
+3. ORGANIZACIÓN MEDIANTE PPDAC
+
+El marco del proceso es PPDAC: Problema, Plan, Datos, Análisis y Conclusiones. Su función es organizar actividades y decisiones de investigación; no es un modelo del conocimiento del estudiante.
+
+- Problema: formular una pregunta coherente con las variables, el alcance y las posibilidades del dataset.
+- Plan: decidir qué variables utilizar y qué preparación necesitan, justificando las decisiones.
+- Datos: realizar y revisar operaciones de preparación según lo planificado.
+- Análisis: explorar y analizar para responder la pregunta.
+- Conclusiones: interpretar los resultados, reconocer límites y relacionarlos con la pregunta inicial.
+
+El alcance conceptual comprende PPDAC, pero no debe afirmarse que todo el ciclo está completamente implementado o evaluado.
+
+4. FUNDAMENTOS Y FUNCIÓN DE CADA COMPONENTE
+
+- Guiado en analítica visual: ofrece un marco para distinguir grados de intervención como orientar, dirigir y prescribir. Ceneda es un referente de diseño del guiado.
+- Andamiaje pedagógico: fundamenta la contingencia del apoyo, su retirada progresiva y la transferencia de responsabilidad. Los referentes considerados incluyen Wood, Bruner y Ross; Vygotsky; y Van de Pol y colaboradores.
+- BKT: estima probabilísticamente dominio a partir de observaciones. No demuestra aprendizaje por sí solo y no selecciona directamente la ayuda.
+- LLM: evalúa respuestas con una rúbrica y genera orientación contextual mediante operaciones separadas.
+- Política de asistencia: convierte el estado estimado, el desempeño, la ayuda previa y el contexto en una decisión explícita de intervención.
+
+Estos fundamentos no validan automáticamente la rúbrica, los parámetros, los umbrales ni la eficacia de SiGAD. La pertinencia de cada referencia debe comprobarse en las fuentes originales al redactar el artículo.
+
+5. GRADOS DE APOYO
+
+Autónomo: el estudiante intenta responder sin pistas del sistema.
+Orientar: recibe una pista contextual y conserva la responsabilidad de construir la respuesta.
+Dirigir: recibe alternativas viables y apoyo para comparar y decidir.
+Prescribir: recibe una propuesta o ejemplo explicado para poder avanzar.
+
+La aplicación concreta cambia según la fase. Prescribir no significa necesariamente ejecutar una transformación automáticamente. En Plan, confirmar una propuesta no modifica los datos.
+
+El objetivo pedagógico incluye retirar apoyo cuando exista evidencia suficiente. La eficacia y las condiciones de esa retirada siguen siendo cuestiones de investigación.
+
+6. ARQUITECTURA Y CICLO DE INTERACCIÓN
+
+Flujo general:
+Contexto y tarea → actividad del estudiante → evaluación válida → actualización del dominio → política de asistencia → intervención contextual → nueva actividad y evidencia.
+
+Responsabilidades:
+- El backend calcula perfiles, faltantes, rangos y resúmenes verificables.
+- El evaluador LLM recibe la respuesta original, la rúbrica y el contexto pertinente.
+- El backend valida la estructura y las referencias a variables de la evaluación.
+- BKT actualiza las habilidades observadas con evidencia admisible.
+- La política selecciona mantener, aumentar o reducir el apoyo.
+- El generador LLM redacta contenido compatible con el grado seleccionado.
+- La interfaz presenta la actividad y permite explorar y responder.
+- Las sesiones conservan contexto, intentos, apoyo y decisiones.
+
+El LLM no decide el grado de ayuda ni modifica las probabilidades BKT. Validar un esquema de salida no garantiza la corrección metodológica o pedagógica del contenido.
+
+7. ESTADO ACTUAL: FASE PROBLEMA
+
+La fase Problema permite explorar visualmente un dataset y formular una pregunta viable. El contexto incluye variables seleccionadas, vista activa, cobertura y resúmenes calculados.
+
+Las vistas documentadas incluyen evolución temporal, patrones cíclicos, distribución, variabilidad, relaciones, frecuencias y comparación por categorías, según las variables disponibles. La exploración y la selección de gráficos no actualizan BKT.
+
+Se evalúan cuatro habilidades:
+- Propósito: expresar qué se desea conocer.
+- Alcance: delimitar población, unidad o periodo cuando corresponda.
+- Variables: seleccionar variables disponibles y pertinentes.
+- Viabilidad: reconocer si los datos y operaciones permiten abordar la pregunta.
+
+La rúbrica usa puntuaciones 0, 1 y 2. Actualmente, 2 se convierte en evidencia correcta y 0/1 en incorrecta para BKT. Esta conversión pierde información sobre el desempeño parcial y debe justificarse.
+
+El primer intento empieza en Autónomo. Una respuesta insuficiente o una solicitud de ayuda aumenta un grado. La documentación actual también contempla aumentar ayuda por inactividad de 30 segundos en esta fase, sin actualizar conocimiento. No debe interpretarse el tiempo sin respuesta como prueba de desconocimiento.
+
+Se distinguen respuestas propias y asistidas. Los aciertos en Prescribir no acreditan dominio; la implementación sí procesa errores en ese nivel. Las respuestas asistidas en Orientar/Dirigir pueden actualizar BKT con los mismos parámetros actuales, lo que requiere revisión metodológica.
+
+Al cerrar una tarea, la política documentada puede reducir un grado en la siguiente tarea comparable si todas las habilidades superan el umbral y tienen evidencia en al menos dos tareas distintas no prescritas. Esto no equivale necesariamente a exigir evidencia exclusivamente autónoma. La propuesta revisada recomienda una condición más conservadora basada en evidencia autónoma suficiente.
+
+Existe una actividad diagnóstica sin ayuda para obtener evidencia propia, incluso después de una prescripción. La equivalencia de dificultad entre tareas aún necesita validación.
+
+8. ESTADO ACTUAL: FASE PLAN
+
+Recupera la pregunta confirmada en Problema y permite seleccionar variables y decidir cómo prepararlas.
+
+El contexto incluye diagnóstico calculado de faltantes, candidatos a atípicos, rangos, fechas, categorías y roles de columnas. Las opciones deben ser pertinentes a la pregunta y a las características de los datos; no se exige tratar toda columna ni normalizar por la sola diferencia de rangos.
+
+La evaluación considera coherencia con la pregunta, calidad de datos, escalado y estructura. Mantiene habilidades BKT separadas de Problema.
+
+Incluye apoyo visual local para examinar disponibilidad temporal y candidatos a atípicos. Estas pistas visuales no requieren por sí mismas consultas al LLM. La evaluación formal y parte de la generación de ayuda sí utilizan el proveedor configurado.
+
+El temporizador de la interfaz de Plan está desactivado: leer un gráfico no aumenta automáticamente el apoyo.
+
+El plan confirmado conserva pasos, columnas, justificaciones y origen de la propuesta. Confirmarlo no ejecuta tratamientos. La integración de su ejecución con la fase Datos sigue pendiente.
+
+9. DATOS, ANÁLISIS Y CONCLUSIONES
+
+Existen componentes técnicos para tratar faltantes, detectar atípicos, normalizar y transformar componentes temporales. No deben equipararse con un ciclo pedagógico completo ya integrado y evaluado.
+
+Análisis y Conclusiones forman parte del diseño conceptual. El alcance del artículo debe ajustarse a lo realmente implementado y a la evaluación que sea posible realizar.
+
+El prototipo trabaja con datos temporales multivariados; la documentación incluye significados conocidos del dataset PRSA. La identificación automática de roles de columnas es heurística y necesita confirmación mediante un diccionario de datos. No debe suponerse que la solución ya está validada para cualquier dominio.
+
+10. EJEMPLO REPRESENTATIVO
+
+Un estudiante formula una pregunta sobre la evolución de una medida en un periodo. Explora los datos y detecta faltantes. Debe decidir si afectan su pregunta y proponer cómo abordarlos, con una justificación.
+
+Si tiene dificultades, el sistema puede ofrecer una pista, alternativas o un ejemplo explicado. Más adelante debería comprobar qué registros se modificaron y cómo cambian los resultados.
+
+El objetivo es recoger evidencia de que comprende la decisión, no solo de que acepta una sugerencia. Un candidato a atípico no es automáticamente un error; un periodo sin registros tampoco equivale a una celda faltante.
+
+La comprobación integrada posterior a la ejecución es una dirección de diseño; no debe describirse como una funcionalidad completa ya validada.
+
+11. CONTRIBUCIÓN CANDIDATA DEL ARTÍCULO
+
+La contribución que quiero contrastar es una arquitectura de guiado que conecte contexto analítico, evaluación del desempeño, estimación del dominio, política explícita de asistencia y orientación visual y generativa dentro de actividades PPDAC.
+
+Posibles resultados publicables, según el alcance final:
+- Un diseño de arquitectura y responsabilidades claramente separadas.
+- Una política de apoyo trazable y verificable.
+- Una operacionalización de habilidades y evidencias para actividades concretas.
+- Evidencia empírica sobre calidad del guiado y, si el estudio lo permite, aprendizaje y autonomía.
+
+Estos son candidatos, no resultados obtenidos ni afirmaciones de novedad confirmada. Integrar tecnologías existentes no basta por sí solo para demostrar una contribución científica.
+
+12. EVALUACIÓN PREVISTA
+
+A. Calidad del guiado: cuestionario con criterios seleccionados de GUIAVisWeb, justificando su adaptación.
+B. Aprendizaje o alfabetización de datos: medida inicial y grupo de comparación. Conviene incluir tareas sin ayuda para distinguir desempeño asistido de dominio autónomo; retención y transferencia requieren actividades específicas si se quieren afirmar.
+C. Consistencia del LLM: repetir contextos fijos y comparar evaluaciones y contenido generado. Una evaluación fluctuante puede alterar la trayectoria BKT. Consistencia no implica corrección.
+D. Validación técnica: verificar reglas de asistencia, fórmulas BKT, intentos duplicados, manejo de fallos y conservación del estado.
+
+Las pruebas técnicas no sustituyen una evaluación con estudiantes. Usabilidad, confianza, percepción de control y tiempo son medidas complementarias; no prueban por sí solas aprendizaje.
+
+13. LIMITACIONES Y DECISIONES PENDIENTES
+
+- Definir población, muestra, tareas, duración y condición de comparación.
+- Delimitar si el artículo evalúa Problema, Problema y Plan, u otro alcance concreto.
+- Validar la rúbrica y la fiabilidad del evaluador, idealmente contrastando con juicio humano.
+- Justificar que las habilidades pueden modelarse separadamente con BKT.
+- Calibrar parámetros y analizar cómo incorporar evidencia asistida.
+- Resolver la diferencia entre la política implementada y la recomendación de exigir evidencia autónoma para retirar apoyo.
+- Justificar el tratamiento de errores bajo prescripción y el uso de inactividad para ofrecer ayuda.
+- Validar la equivalencia de tareas y evitar confundir reintentos con nuevas oportunidades independientes.
+- Completar la integración entre el plan y la ejecución técnica si entra en el alcance.
+
+Parámetros iniciales documentados en Problema: conocimiento inicial 0,50; desliz 0,15; adivinación 0,25; aprendizaje 0,15; umbral 0,85; mínimo de dos tareas. Son configuraciones del prototipo, no valores calibrados ni deducidos de la teoría.
+
+La implementación usa Flask/Python, Pandas y un frontend web con visualización interactiva. Las llamadas al LLM se realizan desde el servidor mediante el cliente Groq configurado. Las sesiones están en memoria: no hay persistencia completa mediante base de datos y reiniciar el servidor pierde el progreso.
+
+14. RELACIÓN CON LOS CUATRO PAPERS
+
+1. Improving Steering and Verification in AI-Assisted Data Analysis with Interactive Task Decomposition.
+Referencia utilizada: arXiv:2407.02651v2.
+https://arxiv.org/abs/2407.02651
+Interés para SiGAD: descomponer tareas, hacer explícitos supuestos y planes, y crear puntos de intervención y verificación.
+
+2. LightVA: Lightweight Visual Analytics with LLM Agent-Based Task Planning and Execution.
+Referencia utilizada: arXiv:2411.05651v2.
+https://arxiv.org/abs/2411.05651
+Interés para SiGAD: planificación, descomposición y separación de responsabilidades entre componentes de análisis.
+
+3. WaitGPT: Monitoring and Steering Conversational LLM Agent in Data Analysis with On-the-Fly Code Visualization.
+Referencia utilizada: arXiv:2408.01703v1.
+https://arxiv.org/abs/2408.01703
+Interés para SiGAD: visualizar operaciones, parámetros y estados intermedios para comprender y revisar transformaciones.
+
+4. How Do Analysts Understand and Verify AI-Assisted Data Analyses?
+Referencia utilizada: arXiv:2309.10947v2.
+https://arxiv.org/abs/2309.10947
+Interés para SiGAD: entender cómo se contrastan procedimientos, explicaciones y datos al verificar una respuesta de IA.
+
+Estas conexiones proceden de la revisión de trabajo del proyecto. Deben comprobarse en los artículos adjuntos. No debe suponerse que estos estudios validan BKT, la política pedagógica de SiGAD o efectos sobre aprendizaje. Tampoco representan todo el estado del arte.
+
+GUIAVisWeb es otro referente considerado para guiado visual en preprocesamiento y criterios de evaluación. Cualquier comparación sobre lo que incluye o no incluye debe basarse en la lectura de su artículo original.
+
+15. LO QUE NECESITO DE LA IA QUE RECIBA ESTE CONTEXTO
+
+Quiero orientación crítica y concreta para mi tesis y artículo:
+
+1. Analiza los cuatro papers: problema, contribución, arquitectura, interacción, evaluación, resultados y límites.
+2. Explica qué puede adoptar SiGAD y qué diferencias requieren evidencia adicional.
+3. Distingue aprendizaje, comprensión, verificación, desempeño y percepción del usuario en las evaluaciones.
+4. Identifica similitudes que debiliten mi propuesta de novedad, sin forzar diferencias.
+5. Ayúdame a formular problema, pregunta de investigación, contribución y objetivos coherentes con el alcance real.
+6. Propón una evaluación viable que permita distinguir completar tareas con ayuda de aprender a resolverlas sin ayuda.
+7. Prioriza mejoras necesarias y señala qué dejar fuera del artículo.
+8. Identifica literatura adicional necesaria para fundamentar adaptación, andamiaje, BKT y alfabetización de datos.
+
+Distingue siempre: resultados de las fuentes, interpretación propia, funciones implementadas, propuestas pendientes e hipótesis por evaluar. No inventes resultados ni referencias. Si falta información para una recomendación, indícalo y formula una pregunta concreta.
+
+FUENTES LOCALES DE ESTE CONTEXTO
+
+- propuesta_sigad_revisada.md: formulación conceptual y recomendaciones; algunas descripciones de implementación corresponden a una versión anterior.
+- Readme.md: secciones actuales de Problema y Plan; contiene también documentación histórica que no debe confundirse con el comportamiento vigente.
+- output/exposicion_papers/entrega/Guion_exposicion.md: revisión de trabajo de los cuatro artículos.
+- Claude outputs/fundamentacion_metodo_tesis.md: notas de fundamentación; sus afirmaciones amplias sobre vacíos y trabajos previos requieren verificación bibliográfica.

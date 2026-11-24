@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seguimiento · SiGAD</title>
+  <link rel="stylesheet" href="/front/styles.css">
+  <link rel="stylesheet" href="/front/seguimiento.css">
+</head>
+<body>
+  <main class="seguimiento-page" data-seguimiento>
+    <header class="seguimiento-header">
+      <h1>Seguimiento de SiGAD</h1>
+      <p data-conexion role="status">Esperando la actividad de SiGAD…</p>
+    </header>
+    <div class="seguimiento-columns">
+      <section class="seguimiento-card" aria-labelledby="ruta-title">
+        <h2 id="ruta-title">Recorrido PPDAC</h2>
+        <ol class="seguimiento-ruta" data-ruta></ol>
+      </section>
+      <div class="seguimiento-details">
+        <section class="seguimiento-card">
+          <h2>Sesión</h2>
+          <dl data-sesion></dl>
+        </section>
+        <section class="seguimiento-card">
+          <h2>Estimación de dominio (BKT)</h2>
+          <div data-dominio></div>
+        </section>
+        <section class="seguimiento-card">
+          <h2>Última evaluación</h2>
+          <div data-evaluacion></div>
+        </section>
+        <section class="seguimiento-card">
+          <h2>Metadatos del dataset</h2>
+          <div data-dataset></div>
+        </section>
+        <section class="seguimiento-card">
+          <h2>Actividad reciente</h2>
+          <ol data-actividad></ol>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script src="/front/seguimiento.js"></script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="1500" viewBox="0 0 1300 1500" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2d3748"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1300" height="1500" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="650" y="38" text-anchor="middle" font-size="26" font-weight="bold" fill="#1a202c">Pipeline del Motor de Guidance Pedagógico</text>
+  <text x="650" y="62" text-anchor="middle" font-size="15" fill="#4a5568">Escalamiento dentro de una fase del ciclo PPDAC (Problema · Plan · Datos · Análisis · Conclusión)</text>
+  <text x="650" y="80" text-anchor="middle" font-size="12" font-style="italic" fill="#718096">Todo el ciclo de escalamiento ocurre dentro de la Zona de Desarrollo Próximo del usuario (Vygotsky, 1978)</text>
+
+  <!-- Start box -->
+  <g>
+    <rect x="160" y="90" width="440" height="70" rx="10" fill="#2d3748"/>
+    <text x="380" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">INICIO DE FASE (PPDAC)</text>
+    <text x="380" y="140" text-anchor="middle" font-size="12.5" fill="#e2e8f0">Se muestran los datos disponibles (función Recruitment)</text>
+  </g>
+  <line x1="380" y1="160" x2="380" y2="195" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Nivel 1 -->
+  <g>
+    <rect x="160" y="200" width="440" height="105" rx="10" fill="#f7fafc" stroke="#718096" stroke-width="2"/>
+    <rect x="160" y="200" width="440" height="30" rx="10" fill="#718096"/>
+    <rect x="160" y="215" width="440" height="15" fill="#718096"/>
+    <text x="380" y="221" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">NIVEL 1 · INTENTO AUTÓNOMO</text>
+    <text x="380" y="252" text-anchor="middle" font-size="12.5" fill="#2d3748">Sin pistas ni sugerencias</text>
+    <text x="380" y="272" text-anchor="middle" font-size="12.5" fill="#2d3748">Temporizador de 30 s</text>
+    <text x="380" y="292" text-anchor="middle" font-size="12.5" fill="#2d3748">(Regla de Decisión 0)</text>
+  </g>
+  <line x1="740" y1="252" x2="1260" y2="252" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+  <line x1="600" y1="252" x2="740" y2="252" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+
+  <!-- Callout 1 -->
+  <g>
+    <rect x="740" y="205" width="520" height="95" rx="8" fill="#faf5ff" stroke="#805ad5" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="760" y="230" font-size="12.5" font-weight="bold" fill="#44337a">Fundamento del Nivel 1</text>
+    <text x="760" y="253" font-size="12" fill="#44337a">Evita el efecto de reversión de la pericia</text>
+    <text x="760" y="271" font-size="12" fill="#44337a">(Kalyuga et al., 2003)</text>
+    <text x="760" y="289" font-size="12" fill="#44337a">Aprovecha el fracaso productivo (Kapur, 2008)</text>
+  </g>
+
+  <line x1="380" y1="305" x2="380" y2="340" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Diamond 1 -->
+  <polygon points="380,345 520,410 380,475 240,410" fill="#ffffff" stroke="#2d3748" stroke-width="2"/>
+  <text x="380" y="398" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">¿P(sabe) ≥ umbral</text>
+  <text x="380" y="414" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">tras actualizar con</text>
+  <text x="380" y="430" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">BKT?</text>
+
+  <!-- SI branch 1 -->
+  <line x1="520" y1="410" x2="680" y2="410" stroke="#276749" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="560" y="402" font-size="12.5" font-weight="bold" fill="#276749">SÍ</text>
+
+  <!-- NO branch 1 -->
+  <line x1="380" y1="475" x2="380" y2="505" stroke="#c53030" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="392" y="495" font-size="12.5" font-weight="bold" fill="#c53030">NO / TIMEOUT</text>
+
+  <!-- Nivel 2 -->
+  <g>
+    <rect x="160" y="510" width="440" height="105" rx="10" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2"/>
+    <rect x="160" y="510" width="440" height="30" rx="10" fill="#2b6cb0"/>
+    <rect x="160" y="525" width="440" height="15" fill="#2b6cb0"/>
+    <text x="380" y="531" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">NIVEL 2 · ORIENTAR</text>
+    <text x="380" y="562" text-anchor="middle" font-size="12.5" fill="#2c5282">Pistas hacia el mapa mental</text>
+    <text x="380" y="582" text-anchor="middle" font-size="12.5" fill="#2c5282">(sin señalar la solución)</text>
+    <text x="380" y="602" text-anchor="middle" font-size="12.5" fill="#2c5282">Grado de guiado: Orientar</text>
+  </g>
+  <line x1="740" y1="562" x2="1260" y2="562" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+  <line x1="600" y1="562" x2="740" y2="562" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+
+  <!-- Callout 2 -->
+  <g>
+    <rect x="740" y="515" width="520" height="95" rx="8" fill="#faf5ff" stroke="#805ad5" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="760" y="538" font-size="12.5" font-weight="bold" fill="#44337a">Fundamento del Nivel 2</text>
+    <text x="760" y="558" font-size="12" fill="#44337a">Grado "Orientar" (Ceneda et al., 2016)</text>
+    <text x="760" y="576" font-size="12" fill="#44337a">Función de andamiaje: marcar características</text>
+    <text x="760" y="594" font-size="12" fill="#44337a">críticas (Wood, Bruner &amp; Ross, 1976)</text>
+  </g>
+
+  <line x1="380" y1="615" x2="380" y2="650" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Diamond 2 -->
+  <polygon points="380,655 520,720 380,785 240,720" fill="#ffffff" stroke="#2d3748" stroke-width="2"/>
+  <text x="380" y="716" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">¿P(sabe) ≥ umbral</text>
+  <text x="380" y="732" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">tras orientar?</text>
+
+  <!-- SI branch 2 -->
+  <line x1="520" y1="720" x2="680" y2="720" stroke="#276749" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="560" y="712" font-size="12.5" font-weight="bold" fill="#276749">SÍ</text>
+
+  <!-- NO branch 2 -->
+  <line x1="380" y1="785" x2="380" y2="815" stroke="#c53030" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="392" y="805" font-size="12.5" font-weight="bold" fill="#c53030">NO / TIMEOUT</text>
+
+  <!-- Nivel 3 -->
+  <g>
+    <rect x="160" y="820" width="440" height="105" rx="10" fill="#e6fffa" stroke="#2c7a7b" stroke-width="2"/>
+    <rect x="160" y="820" width="440" height="30" rx="10" fill="#2c7a7b"/>
+    <rect x="160" y="835" width="440" height="15" fill="#2c7a7b"/>
+    <text x="380" y="841" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">NIVEL 3 · DIRIGIR</text>
+    <text x="380" y="872" text-anchor="middle" font-size="12.5" fill="#285e61">Alternativas curadas para elegir</text>
+    <text x="380" y="892" text-anchor="middle" font-size="12.5" fill="#285e61">(el usuario decide entre opciones)</text>
+    <text x="380" y="912" text-anchor="middle" font-size="12.5" fill="#285e61">Grado de guiado: Dirigir</text>
+  </g>
+  <line x1="740" y1="872" x2="1260" y2="872" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+  <line x1="600" y1="872" x2="740" y2="872" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+
+  <!-- Callout 3 -->
+  <g>
+    <rect x="740" y="815" width="520" height="112" rx="8" fill="#faf5ff" stroke="#805ad5" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="760" y="836" font-size="12.5" font-weight="bold" fill="#44337a">Fundamento del Nivel 3</text>
+    <text x="760" y="855" font-size="12" fill="#44337a">Grado "Dirigir" (Ceneda et al., 2016)</text>
+    <text x="760" y="873" font-size="12" fill="#44337a">Función de andamiaje: reducir los grados</text>
+    <text x="760" y="891" font-size="12" fill="#44337a">de libertad de la tarea</text>
+    <text x="760" y="909" font-size="12" fill="#44337a">(Wood, Bruner &amp; Ross, 1976)</text>
+  </g>
+
+  <line x1="380" y1="925" x2="380" y2="960" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Diamond 3 -->
+  <polygon points="380,965 520,1030 380,1095 240,1030" fill="#ffffff" stroke="#2d3748" stroke-width="2"/>
+  <text x="380" y="1022" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">¿P(sabe) ≥ umbral</text>
+  <text x="380" y="1038" text-anchor="middle" font-size="12" font-weight="bold" fill="#2d3748">tras dirigir?</text>
+
+  <!-- SI branch 3 -->
+  <line x1="520" y1="1030" x2="680" y2="1030" stroke="#276749" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="560" y="1022" font-size="12.5" font-weight="bold" fill="#276749">SÍ</text>
+
+  <!-- NO branch 3 -->
+  <line x1="380" y1="1095" x2="380" y2="1125" stroke="#c53030" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="392" y="1115" font-size="12.5" font-weight="bold" fill="#c53030">NO / TIMEOUT</text>
+
+  <!-- Nivel 4 -->
+  <g>
+    <rect x="160" y="1130" width="440" height="105" rx="10" fill="#fffbea" stroke="#b7791f" stroke-width="2"/>
+    <rect x="160" y="1130" width="440" height="30" rx="10" fill="#b7791f"/>
+    <rect x="160" y="1145" width="440" height="15" fill="#b7791f"/>
+    <text x="380" y="1151" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">NIVEL 4 · PRESCRIBIR</text>
+    <text x="380" y="1182" text-anchor="middle" font-size="12.5" fill="#7b341e">El sistema decide y ejecuta,</text>
+    <text x="380" y="1202" text-anchor="middle" font-size="12.5" fill="#7b341e">explicando su justificación</text>
+    <text x="380" y="1222" text-anchor="middle" font-size="12.5" fill="#7b341e">Grado de guiado: Prescribir</text>
+  </g>
+  <line x1="740" y1="1182" x2="1260" y2="1182" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+  <line x1="600" y1="1182" x2="740" y2="1182" stroke="#a0aec0" stroke-width="1.3" stroke-dasharray="4,3"/>
+
+  <!-- Callout 4 -->
+  <g>
+    <rect x="740" y="1135" width="520" height="95" rx="8" fill="#faf5ff" stroke="#805ad5" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <text x="760" y="1158" font-size="12.5" font-weight="bold" fill="#44337a">Fundamento del Nivel 4</text>
+    <text x="760" y="1178" font-size="12" fill="#44337a">Grado "Prescribir" (Ceneda et al., 2016)</text>
+    <text x="760" y="1196" font-size="12" fill="#44337a">Función de andamiaje: demostración</text>
+    <text x="760" y="1214" font-size="12" fill="#44337a">(Wood, Bruner &amp; Ross, 1976)</text>
+  </g>
+
+  <line x1="380" y1="1235" x2="380" y2="1270" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Merge vertical line (SI branches) -->
+  <line x1="680" y1="410" x2="680" y2="1290" stroke="#276749" stroke-width="2.5"/>
+  <line x1="680" y1="1290" x2="600" y2="1290" stroke="#276749" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Registro box -->
+  <g>
+    <rect x="160" y="1275" width="440" height="70" rx="10" fill="#276749"/>
+    <text x="380" y="1303" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">SE REGISTRA EN EL HISTORIAL</text>
+    <text x="380" y="1324" text-anchor="middle" font-size="12" fill="#c6f6d5">(nivel alcanzado, tiempo, decisión tomada)</text>
+  </g>
+
+  <line x1="380" y1="1345" x2="380" y2="1375" stroke="#2d3748" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Fin box -->
+  <g>
+    <rect x="160" y="1380" width="440" height="60" rx="10" fill="#2d3748"/>
+    <text x="380" y="1416" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">FIN DE FASE → continúa el ciclo PPDAC</text>
+  </g>
+
+  <!-- Footer note -->
+  <text x="650" y="1462" text-anchor="middle" font-size="12.5" fill="#4a5568" font-style="italic">Este pipeline se repite en cada fase del PPDAC; cambia el contenido pedagógico de cada nivel, no el mecanismo de escalamiento.</text>
+</svg>

@@ -1,0 +1,2149 @@
+
+=== PAGE 1 ===
+5202
+nuJ
+12
+]CH.sc[
+2v15650.1142:viXra
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 1
+LightVA: Lightweight Visual Analytics with LLM
+Agent-Based Task Planning and Execution
+Yuheng Zhao, Junjie Wang, Linbin Xiang, Xiaowen Zhang, Zifei Guo,
+Cagatay Turkay, Yu Zhang and Siming Chen
+Abstract—Visualanalytics(VA)requiresanalyststoiteratively distributionofkeywordsovertimeorchangesinsentimentfor
+propose analysis tasks based on observations and execute tasks risk analysis. If outliers are identified, users may need further
+by creating visualizations and interactive exploration to gain details, such as spatial distribution or entity relationships.
+insights. This process demands skills in programming, data pro- In this process, the task space is broad and fluid, requiring
+cessing, and visualization tools, highlighting the need for a more efficient task planning and method implementation.
+intelligent, streamlined VA approach. Large language models
+Recentresearchfocusesondata-drivenornaturallanguage-
+(LLMs)haverecentlybeendevelopedasagentstohandlevarious
+based visual data exploration, with an emphasis on automatic
+taskswithdynamicplanningandtool-usingcapabilities,offering
+visualization generation [5], [6] or insight mining [7], [8].
+the potential to enhance the efficiency and versatility of VA. We
+Large Language Models (LLMs) present a potential for data
+propose LightVA, a lightweight VA framework that supports
+task decomposition, data analysis, and interactive exploration analysis, supporting dynamic task planning and lower devel-
+through human-agent collaboration. Our method is designed to opment costs across various scenarios. The reasoning abilities
+help users progressively translate high-level analytical goals into that enable autonomous planning and execution of analytical
+low-level tasks, producing visualizations and deriving insights. tasks[9]–[11],whilecodegenerationcapabilitysupportcreat-
+Specifically, we introduce an LLM agent-based task planning inginsightfulvisualizationsefficiently[12]–[14].Additionally,
+and execution strategy, employing a recursive process involving their broad knowledge base makes LLMs versatile tools ca-
+a planner, executor, and controller. The planner is responsible pable of adapting to diverse data analysis contexts [15], [16].
+for recommending and decomposing tasks, the executor handles LEVA [17] integrates LLMs in VA systems to recommend
+task execution, including data analysis, visualization generation insights for a given task but still cannot generate visualization
+and multi-view composition, and the controller coordinates the and data modeling methods adapted to tasks. There is a
+interaction between the planner and executor. Building on the lack of approaches supporting task planning, VA methods
+framework, we develop a system with a hybrid user interface
+implementation, and interactive analysis with human-agent
+that includes a task flow diagram for monitoring and managing
+collaboration.
+the task planning process, a visualization panel for interactive
+dataexploration,andachatviewforguidingthemodelthrough
+ThispaperintroducesLightVA,alightweightVAframework
+natural language instructions. We examine the effectiveness of with agent-based task planning. The term “lightweight” refers
+our method through a usage scenario and an expert study. to the framework’s focus on reducing the cost of development
+and using VA systems. Using LLM agents to aid the task
+Index Terms—Visual Analytics, Task Planning, Large Lan-
+planning and execution process. The framework builds upon
+guage Model Agent, Mixed-Initiative Interaction
+multi-level relationships, translating high-level goals to low-
+level tasks and deriving insights through data mining and
+I. INTRODUCTION interactivevisualizations.Specifically,theframeworkemploys
+Visual analytics (VA) deciphers complex datasets with data a recursive process that includes a planner, executor, and
+mining and interactive visualizations [1], [2]. However, build- controller,whichdynamicallyaccommodatestaskcomplexity.
+ing and using a VA system can be a costly endeavor that Theplannerisresponsiblefortaskdecomposition,theexecutor
+encompasses several main stages: goal understanding, task handles task execution, including visualization generation and
+decomposition, data modeling, and visualization creation to data analysis, and the controller orchestrates the executor and
+discover insights. A key challenge is that this process is planner and manages whether tasks continue to be decom-
+iterative, requiring continual refinement based on evolving posed. We develop a system based on the framework that
+needs [3]. Different tasks necessitate various data analysis provides a chat view to support communication among users
+and visualization methods to form a VA system. While using andagents,ataskflowviewtovisualizemanagetheprocessof
+the system, tasks may evolve based on the insights gained, task planning, a visualization panel to show single view and
+necessitating ongoing iterations until the analytical goals are multiple linked views connected to the task flow. Our main
+achieved[4].Considerascenariowherethegoalistoidentify contributions are as follows:
+high-risk events from social media data. Users may first
+need an overview from different perspectives, such as the • We propose a lightweight VA framework using LLM agent-
+based task planning and execution. This approach enables
+adaptive, efficient analysis through human-agent collabora-
+Yuheng Zhao, Junjie Wang, Linbin Xiang, Xiaowen Zhang, Zifei Guo,
+Siming Chen are with School of Data Science, Fudan University. E-mail: tion, supporting users in task decomposition, visualization,
+{yuhengzhao,simingchen}@fudan.edu.cn.SimingChenisthecorresponding and insight discovery.
+author. • We develop a system that embodies our framework, sup-
+Cagatay Turkay is with the Centre for Interdisciplinary Methodologies, porting users to analyze data with the assistance of agents
+UniversityofWarwick.E-mail:Cagatay.Turkay@warwick.ac.uk.
+and communicate through the hybrid user interface.
+YuZhangiswithDepartmentofComputerScience,UniversityofOxford.
+E-mail:yuzhang94@outlook.com. • We demonstrate the effectiveness of the system through a
+ManuscriptreceivedApril19,2005;revisedAugust26,2015. usage scenario and an expert study.
+
+=== PAGE 2 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 2
+II. RELATEDWORK visualization techniques into the EDA process, expanding the
+task space. Casner [39] presents one of the earliest examples
+Our research is related to prior studies on visualization
+of visualization systems that suggest charts based on a user’s
+recommendations, task-driven data exploration, and LLM ap-
+task (e.g., finding direct flight routes or a table to see flight
+plication in data exploration.
+information). Saket et al. [40] conducted a study to assess
+the effectiveness of five canonical visualizations on ten low-
+A. Visualization Recommendation level analytic tasks [41] and developed a recommendation
+Visualization authoring typically requires users to have engine based on their study’s findings. Gotz and Wen [42]
+professionalvisualizationknowledgeandprogrammingability. present a prototype system that observes interaction patterns
+Forexample,toolslikeTableausupportcreatingvisualizations (e.g., repeatedly changing filters or swapping attributes) to
+and multiple linked views with shelf-configuration design, infer analytic tasks such as comparison or trend analysis
+offeringrobustvisualizationcreationfeatures.However,while and correspondingly recommends visualizations such as small
+Tableau excels as an authoring tool, it offers limited support multiples or line charts. VizAssist [43] enables its users to
+for automatic task decomposition and VA method implemen- specify their data objectives in terms of analytic tasks (e.g.,
+tation to further assist with analysis. A corpus of research correlate, compare) and considers these tasks in combination
+has been proposed on automatic visualization recommenda- with existing perceptual guidelines as input to a genetic
+tions [18]–[20]. Rule-based methods, such as Voyager [21] algorithmforrecommendingvisualizations.Foresight[8]uses
+and CompassQL [22], utilize the visualization principles to tasks like distributions, outliers, and correlations to guide in-
+construct visual mapping and allow users to choose their sight discovery and grouping recommendations. TaskVis [44]
+interested data properties and visual encoding to create vi- recommends visualizations under specific tasks through an-
+sualizations. For machine learning methods, Data2Vis [23] swer set programming.
+introducesanend-to-endtrainableneuraltranslationmodelfor In addition to visual generation based on a single task,
+automatically generating visualizations from given datasets. Medley [45] recommends multi-view collections based on
+VizML[24]learnedvisualizationdesignchoicesfromacorpus severalanalyticintents,andviewsandwidgetscanbeselected
+of data-visualization pairs. Table2Charts [25] recommends to compose a variety of dashboards. However, the analytic
+visualizations by learning patterns between tables and visual- intents and visualization combinations are often chosen from
+izations. ChartSeer [26] employs deep learning to recommend preset options, which limits exploration flexibility. Different
+visualizations based on users’ interactions. Unlike end-to-end fromthem,westudydynamictaskplanningbasedonthegoal
+deep learning methods that directly learn from datasets to and findings and leverage human-agent collaboration.
+generate visualizations, knowledge graph-based approaches,
+such as AdaVis [27], KG4VIS [28], Lodestar [29], leverage
+C. Large Language Model in Data Exploration
+structured information about data and relationships to recom-
+mend visualizations. LLM-based tools have been proposed for data explo-
+In addition, there are some works that consider multi- ration and visualization tasks. For visualization generation
+view generation. Qu and Hullman [30] proposes coordination and recommendations, LLM4Vis [14] and ChartGPT [46]
+principles to keep consistency. Sun et al. [31] investigate utilizeLLMstochooseappropriatevisualizationsfromnatural
+different linking techniques based on data relationships. Dz- language instructions. Li et al. [47] evaluate the capability
+iban [32] is a visualization API using anchored recommen- of GPT-3.5 to generate visualization specifications, demon-
+dation and extending Draco [33] to reason about multiple strating its superiority over previous machine learning-based
+views. DMiner [34] investigated the design rules of the single approaches. NL2Rigel [48] showcases the LLM’s ability to
+views and view-wise relationships from online notebooks to convert instructions into comprehensive data visualizations
+recommend multiple-view dashboards. MultiVision [35] and and tables. For analytical task translation and automation,
+DashBot [5] recommend dashboards given an input dataset Hassan et al. [49] and Data-Copilot [16] concentrate on
+in an end-to-end manner using deep learning models. Shi converting analytical goals and ambiguous queries into ac-
+et al. [36] optimize multi-view layouts by predicting the tionable data analysis tasks. Ma et al. [50] and JarviX [12]
+similarityofvisualelementsusingTransformer-basedmodels. introduce systems that automate the data exploration process
+Previous work has provided a solid research foundation for byidentifyingsuitableanalysisintentsandgeneratinginsights.
+the principles between data, visualization, and multi-views. Text2Analysis [51] offers a framework for categorizing data
+Building on this, we further study integrating LLM-agent analysis tasks, establishing a structured approach to tackling
+to recommend visualizations that align with high-level goals common analytical challenges ranging from basic operations
+and evolving tasks throughout the VA pipeline, which require toforecastingandchartgeneration.However,thetasksinthese
+significant human effort. studiesaregenerallystraightforwardandfocused,withlimited
+exploration into the decomposition of more complex tasks.
+When using LLMs to solve complex tasks where multi-
+B. Task-Driven Visual Data Exploration
+stepreasoningisdemanded,theperformanceofdirectlyusing
+Inadditiontodataattributeswhenrecommendingvisualiza- LLMstendstodecrease.Recently,priormethodshaveutilized
+tions, some visualization recommendation systems are task- LLMs with input-output prompting, CoT [52], ToT [53] or
+driven recommendation systems that consider one or more GoT [54] to perform complex task planning and execution.
+analytic tasks (e.g., correlate, analyze trend). Some scholars These methods proved that LLMs are good at task planning
+study the recommendation of analysis methods in exploratory but require appropriate prompting techniques. Another way is
+data analysis (EDA) within notebooks. EDAssistant [37] rec- to integrate LLMs in the interface, allowing chaining multiple
+ommends code by analyzing associations between APIs in a promptstoaddressamuchwiderrangeofhumantasks.Wuet
+large notebook collection. ATENA [38] shapes EDA into a al.[55]introducethechainingofAImodels,whereacomplex
+Markov Decision Process (MDP) model using a deep rein- task is divided into multiple steps. Talk2Data [56] presents a
+forcement learning architecture to effectively optimize note- natural language interface that enables users to explore visual
+book generation. Furthermore, visual analytics incorporates data through question decomposition. However, the linked
+
+=== PAGE 3 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 3
+visualizationandmoreadvanceddataanalysismethodsremain Task planning and execution Refinement
+limited. To enhance this capability, we leverage LLMs and
+Recommend and Decompose tasks
+proposeanagent-basedautonomoustask-planningstrategyfor
+Generate
+adaptive VA system construction and exploration.
+VA codes Interact
+Select Validate
+III. LIGHTVAFRAMEWORK Visualization
+Propose
+ Report
+
+The pipeline of VA involves two stages: development and
+task (subtask) insights
+analysis. Thus, in LightVA, we aim to reduce the efforts
+Data modeling
+for both developers and analysts. In the following, we will Develop VA Use VA
+examine the challenges and derive the design requirements System System
+for integrating LLM-based agents into the user’s workflow. Foundation
+Finally,weintroducetheconceptualframeworkofagent-based Goal Data
+VA workflow.
+Fig. 1. The illustration of conceptual framework in LightVA. The agent
+A. Challenges createstheVAsystemforanalysisbytaskplanningandexecution,whilethe
+userusesthecreatedVAsystemandrefinesagentoutputs.
+Through a review of visual analytics literature, we identify
+and dissect specific challenges that intensify the effort users R4 Multiple view composition: As new visualizations are
+must exert: added, older ones may become less relevant. To display
+C1 Accommodating diverse analysis requirements: Data the most recent results to the user, the visualization panel
+Analysts often face the immense challenge of navigating needs to be updated. However, it is crucial to avoid
+a vast exploration space, where the analytical process discardingpreviousresultsastheymayberelevanttonew
+is dynamic and iterative [4]. Forming hypotheses and insights. Users should be allowed to merge visualizations
+validating them through the continuous proposal of new of interest even if they are not the latest. Within the
+tasks and insights is complex. They have to figure out merged views, users can focus their analysis on a smaller
+the connections between tasks and insights in their mind scope through interaction, reducing cognitive load among
+and try to propose tasks in the next few steps until they large sets. (C2)
+achieve the goal. R5 Intuitive analysis process: The relationship between
+C2 Developingvisualizationanddataminingtoolsistime- tasks,visualization,insights,andanalysisprogressshould
+consuming:Analystsoftenlackproficiencyindeveloping be presented in a more intuitive form. The system should
+andmanagingVAsystems,whichmakesitchallengingfor support interactions between human and agent to help
+them to select and apply appropriate data modeling and users understand the agent’s task planning and execution.
+visualization techniques [45]. Additionally, when tasks (C1, C2)
+involve multiple visualizations, these must be integrated
+C. Conceptual Framework
+into a linked view to enable more effective interactive
+exploration [57]. However, this process requires substan- Based on the challenges and requirements discussed, we
+tialknowledgeofbothvisualizationprinciplesandcoding propose LightVA, a lightweight VA framework with agent-
+skills, resulting in inefficiencies and delays [58]. based task planning. The “lightweight” refers to the light ex-
+pectations in developing VA systems and using the developed
+systems for analysis. We design the framework to involve a
+B. Design Requirements
+recursive task-solving process in which goals and data are
+Based on these challenges, we have settled on a set of inputs, and insights are outputs. The intermediate results are
+targeted design requirements. tasks, subtasks, visualization, data modeling (Fig. 1). The
+R1 Adaptive task planning: Task proposals need to be LLM agents are integrated to support goal understanding
+tailoredtousers’analysisgoalsandthegivendataset.This and task decomposition (R1), data modeling and visualization
+includes exploring in depth and breadth, with automatic codes generation (R2, R3), and linked view generation for
+planning and execution reducing user efforts. Moreover, interactiveexploration(R4).Meanwhile,theuserscanmonitor
+as exploration results emerge, new tasks should contextu- the process, guide the agent, and refine the agent’s output
+ally link to previous exploration results, adapting to the through direct manipulations and natural languages (R5).
+switching between tasks. (C1) 1) DefiningPrimitives: Accordingtotheabovedescriptions
+R2 Flexible visualization generation: The generation of of the framework, some key primitives need to be defined.
+visualizations should flexibly handle different tasks and Goal and Data: We define a goal as an overall description
+data.Thisencompassesaccuratedataidentification,trans- or a vague utterance that expresses the high-level purpose of
+formation, and selection of visualization types, as well the analysis. For instance, “to analyze the influence factor
+as adding highlights based on discovered insights to re- on a car’s fuel efficiency”. The goal directs the focus of the
+duce cognitive load. Furthermore, generated views should analysis, and the data supplies the analysis evidence to meet
+support interaction, allowing for more immersive user the goal.
+analysis. (C2) Task: Tasks are specific aspects derived from the goal
+R3 Automatic insight generation: To reduce development and make the goal executable. We define them using four
+costs, the system should efficiently complete code-based attributes:
+dataanalysesforgiventasks,providingvisualizationsand
+task:=⟨type, data variables, method, progress⟩ (1)
+suggesting findings to facilitate hypothesis forming and
+validation.Tolessenthecognitiveburden,importantparts The type indicates the nature or category of the analytical
+ofinsightsshouldbehighlightedinrichtextformatinthe operation to be performed, such as finding extreme, outlier,
+output results. (C2) change point, trend analysis, etc. The data variables are the
+
+=== PAGE 4 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 4
+objects upon which the tasks will be applied. The method LLM Agent-based Task Planning and Execution for Visual Analytics
+defines how the task will be solved, including data modeling
+1 Task recommendation 2 Task execution 3 Task decomposition
+and visualization methods, and the solved result is insight.
+If the task is complex, which means it covers multiple data H1 Set H2 Select or H3 Merge H4Interactive H5Examine and modify
+variables and needs to use multiple methods to solve, the task data & goal Propose tasks visualizations exploration decomposition plan
+can be decomposed into subtasks. To depict whether the task
+is completed, we define progress, which means the task is Goal Task Visualization Subtask
+solved when its subtasks are solved as well. Given that the Task Insight Subtask
+tasks can be complex and range from low to high abstraction, Data Data modeling Subtask
+we describe them using natural language. Visual analytics Summarized
+Insight:Thisdenotestheexpectedortargetedknowledgeor system insight
+understanding that the task aims to achieve. We define insight
+using four attributes: Interpret Recommend Generate Report Evaluate Decompose
+A1 data A2 tasks A3 codes A4 insight A5 task A6 task
+insight:=⟨type, parameters, data variables, data values⟩ (2) Fig.2. TheworkflowoftheLLMagent-basedtaskplanningandexecution
+for visual analytics. The collaboration between users and the AI agent is
+The insight type can be discoveries, patterns, trends, or characterizedbythreestages:taskrecommendation,taskexecution,andtask
+anomalies identified through analysis [59]. For example, if decomposition.Theuserproposesgoals,selectstasks,mergesvisualizations,
+and engages in interactive exploration (H1-H5). The agent interprets data,
+the task type is “compare”, the insight type could be “differ-
+recommends tasks, generates codes, reports insights, evaluates tasks, and
+ence”[7].Theparametersspecificfeaturesoftheinsight,such
+decomposestasks(A1-A6).
+as“increasing”or“decreasing”of“trend”.Thedatavariables
+for insights can be the original data columns or transformed high-risk events in a city”, useful data variables could in-
+variables, while the data variables for tasks are the original clude time, space, text, and sentiment. The agent also needs
+data columns. For example, if the task involves analyzing to distinguish the purpose of the analysis, e.g., “finding
+vehicle weight and fuel efficiency (MPG), the task’s data outliers”.Thus,differentcombinationsofdatavariablesand
+variables would include “Weight in lbs” and “MPG”. If the task types can form different tasks under a goal.
+insight includes a derived metric such as “MPG per pound,” • Historical context stage: As the analysis continues to
+this would be considered a transformed variable specific to accumulateintherecommendationprocess,theagentshould
+the insight. The data values refer to particular values of data recommend tasksconsidering previoustasks and theoverall
+variables. For example, the maximum MPG value is “48”. goal. First, when a task is completed, the agent evaluates if
+Visualization: Refers to the visual representation required the overall goal has been achieved. If not, it should recom-
+for the task that best conveys the data and insights. mend new tasks aligned with the goal. Second, previously
+unexploredtasksshouldbere-evaluatedandproposedagain
+visualization:=⟨type, encoding, interaction, coordination⟩ (3) if they are still relevant to the goal.
+Stage2: Task execution. In this stage, the agent gener-
+Our framework generates visualizations using Vega-Lite
+ates visualization and modeling codes (A3) and executes the
+grammar [60], which supports the above four aspects. The
+codes to report and summarize insights (A4). Having multiple
+typesofinteractionsare,e.g.,filtering,zooming,andhovering
+visualizations and modeling approaches, users could select
+supported by the visualization. The coordination describes
+visualizations to merge a linked view (H3) and interactively
+how this visualization interacts or synchronizes with other
+exploreit(H4).Itcomprisesthefollowingtwo-stepapproach:
+visualizations, such as a brush, to filter each other.
+2) WorkflowofFramework: Ourframeworkinvolvesbuild- • Visualization and insight generation: When the user se-
+ing a task flow, represented as a directed compound graph lects an agent-proposed task or proposes a task themselves,
+G=(V,E), where each node v∈V represents a task and edge the agent writes codes to complete the analysis. The agent
+e∈E representstheconnectionfromonetasktoanothertask. needstochooseappropriatedatamodelingandvisualization
+Since the process of exploration involves both enlightening methods for each task and run the codes to complete the
+and in-depth thinking, we define two types of task edges: analysis. The agent then needs to generate the insights into
+recommendation and decomposition. And we define the a structured format. Finally, the agent should summarize
+solving of the task as execution. The difference between insights obtained from the decomposition of subtasks, pro-
+recommendationanddecompositionisthatrecommendationis viding a comprehensive overview of the analysis.
+“goal-oriented”,anddecompositionis“task-specific”.Therec- • Multi-view linking: Users can initiate coordination by
+ommendationaimstobroadentheexplorationscope,providing selecting multiple visualizations they prefer while the agent
+heuristicsuggestions.Thedecompositionaimstoensureade- generatescodes.Wecurrentlydonotautomaticallycombine
+tailedplanwithclearlogicforsolvingthetask.Thefollowing visualizations from subtasks because subtasks decomposed
+sections will introduce how humans and agents collaborated from a main task often share common variables and visu-
+to complete the analysis in our framework (Fig. 2). alization types. For example, several subtasks might use
+Stage1: Task recommendation. Initially, the user uploads latitude and longitude to create maps exploring different
+the data and inputs a goal (H1), and then the agent interprets spatial patterns. The linked view is often used to conduct
+data (A1) and transforms the goal into specific, actionable multi-variate association analysis with different visualiza-
+tasks (A2). The user can provide feedback and accept or tions. Thus, allowing users to choose their visualizations
+modify recommended tasks to align with their analysis needs can provide a more flexible analysis.
+(H2).Specifically,theinteractionprocessinvolvestwostages: Stage3:Taskdecomposition.Wedesignthedecomposition
+• Initial stage: At the begining, agent should first interpret following a “on-demand” strategy. In other words, execution
+the data and propose tasks that make the goal executable isprioritized,anddecompositionisconsideredonlyifthetask
+by mapping it to the data. The principle is to identify data is not completed. This approach aims to ensure users can
+variables and task type. For instance, for a goal of “find see initial results quickly in an interactive environment. In
+
+=== PAGE 5 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 5
+Task Recommendation Task Execution Task Decomposition
+Logic operator
+User Input a Task 1 Executor c Decomposer
+AND DOWN
+Goal Recommender Task Visual Consistency Interactive
+2 Visualization SubTask 1 TPA (SubTask 1, k+1)
+Dataset b Task Color mapping
+3 Insight
+field, scale SubTask 2 TPA (SubTask 2 , k+1)
+Return f
+Interaction linking
+SubTask TPA (SubTask, k+1)
+3 3
+Analysis History field, type
+Chat Panel Completed?
+notadseks,, leodggices Task Flow Layout organizing
+Return
+nnooddeess,, eeddggeess order, relation
+LLooggicic
+Return
+Return Finished? Data Lens Insight Styling Multiple
+data subset Visualizations
+filed, values, type,
+parameter Controller Return Summary Insight
+e d
+Fig.3. Theagent-basedsystemarchitecture.Thepipelinestartsfromthegoalanddatawithanagent-basedtaskplanningstrategy,includingrecommendation,
+execution,anddecomposition.Specificcomponentsandinteractionsarelabeled(a)-(f),where(a)istheinitialstagetorecommendtasksfromthegoal,(b)
+recommends tasks with historical contexts, and (c) is the execution of tasks generating visualization and insights. After that, a series of optimizations for
+visualconsistencyareperformed(d).Historicalrecordsaremanaged,andtheprogressoftasksisupdatedinatimelymanner(e).Accordingtotheanalysis
+results,theagentevaluateswhetherthetaskneedstobedecomposed(f).
+this stage, the agent is responsible for evaluating tasks (A5) Intheinitialstage,theinputisthegoalandthedata(Fig.3-
+andproposingadecompositionplan(A6),whiletheuserscan a)andtheobjectiveistoconvertthegoalintoactionabletasks.
+examine and modify agent output to override the agents (H5). Basedontheframework(SectionIII-C2),weguidethemodel
+• Resultsassessment:Basedontheinitialexecution’sinsights with three principles. First, identify data variables relevant to
+and the complexity of the task, the agent assesses the need the goal. Second, propose several task type to refine the goal
+for further analysis. According to the definition of task, the from different aspects. Third, draft descriptions of tasks by
+agent should verify the selection of data variables and the combining these data variables and task types.
+rationality of data modeling and visualization methods. The
+evaluationshouldbeexplainedtomakeusersunderstandthe
+In the historical context stage (Fig. 3-b), the generated
+motivation of decomposition.
+tasks should be divided into two types: linking goals with
+• Sub-task generation: If decomposition is necessary, agent
+discoveries to propose new tasks and tasks that might have
+should formulate a plan outlining subtasks. Each subtask
+been forgotten by the user needs to review. To achieve this
+shouldhaveappropriatedatavariablesandmethodsaddress-
+goal, the model might need to consider the following steps.
+ing distinct aspects of the main task. These subtasks should
+First, evaluate completed tasks to check if the overall goal
+have an execution order, e.g., in parallel or sequentially.
+is achieved. Second, propose new tasks based on the current
+context and previous tasks. Third, propose previously unex-
+IV. LIGHTVASYSTEM
+plored tasks if they remain relevant. In addition to guidelines,
+Guided by the design requirements, we propose a pipeline we should provide examples of output to guide models.
+of LLMagent-based task planningand an interfaceto support
+interactive visual data exploration with assistance.
+PromptTemplate1(TaskRecommendation).
+———————————————————-Initial stage
+A. Agent-based Task Planning
+Input: {goal, data}
+Based on the conceptual framework previously introduced, Instruction: You need to come up with a short plan based
+we propose an agent-based task-planning pipeline Fig. 3. In on the understanding of the data to help accomplish the
+thisprocess,wehavethreekindsofmodules.Theplanner has goal. Please recommend n exploratory tasks, including task
+twotypes:recommender anddecomposer,whichareresponsi-
+description,type,anddatavariables.Fortasktype,youmay
+ble for task recommendation and decomposition respectively. considerthetrend,correlation,category,distribution,etc,to
+The executor handles task execution, including visualization explore the goal from different aspects. For data variables,
+generationanddataanalysis,andthecontrolleristherecursive
+list the original column names.
+algorithm that bridges the executor and planner (See the Indicator: {An example in JSON format}
+algorithm in the appendix). When introducing each stage’s Output: {new tasks}
+strategy, we provide the prompt templates that describe input —————————————————Historicalcontext
+and output, instructions to LLMs, and indicators to describe Input: {goal, data, explored and unexplored tasks}
+the output format. The prompt examples and outputs are Instruction: You need to supplement some new tasks for
+available in Appendix A. explored tasks by considering the results of tasks already
+1) Task recommendation: Task planning begins with a
+exploredifneeded.Second,itisrecommendedthatprevious
+recommendationapproachbasedonthegivengoalanddataset.
+unexploredtasksberevisitediftheyaresuitableforanalysis
+The recommender aims to transform the goal into actionable
+at this stage by considering the explored tasks.
+tasks. The implementation follows the step-by-step guidelines
+Indicator: {An example in JSON format}
+with two stages: initial stage and historical context stage
+Output: {new tasks, existing tasks to review}
+(Prompt template 1).
+
+=== PAGE 6 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 6
+2) TaskExecution: Aftertasksareproposedandconfirmed environment to execute the visualization part of the code. The
+by the user, the executor will solve tasks by generating agent runs the data analysis part, interprets the results, and
+codes (Fig. 3-c). We then adopt the “decompose on-demand” derives insights. We provide a format example according to
+strategy, which means we first execute the task and then our definition of insight in the framework to guide model
+decompose the task if the results are unsatisfactory. This output. This includes the insight description, the insight type,
+approach allows users to obtain preliminary results quickly and the data variables and values. These attributes highlight
+and enables a more flexible way to address both simple and key elements in the insight description to improve readability.
+complex tasks, avoiding unnecessary time cost that comes Linked-view generation: For multi-variable association
+from always decomposing tasks in advance. analysis, we enable the generation of multiple linked views
+Toexecuteatask,theinputfortheexecutorincludesagoal, (Fig.3-d).WhileLLMscanaddinteractivityandsetbasiccol-
+data, and task description, and the output includes visualiza- orsandlayoutswithinthecode,maintainingvisualconsistency
+tionsandinsightsfortheselectedtask(Prompttemplate2).In across views, such as avoiding duplicate colors and ensuring
+the first round, two code snippets are generated: one for data neat layouts, requires implementing additional constraints.
+analysis and the other for visualization. In the second round,
+• Interaction linking: To enable interaction linking among
+structured insights are generated by data analysis results.
+charts, we instruct the model to modify and combine the
+chart codes following several guidelines. First, ensure both
+PromptTemplate2(TaskExecution). charts contain common key columns with consistent data
+—————————————————-Code generation formats for the selection fields. Next, define the selection
+Input: {task, data summary, code template} mechanisms. Common interaction methods include a brush
+Instruction: You need to write Python codes to analyze on the time axis for the line chart, dual brushes for the
+the data to solve this task. After finishing the data analysis, scatter plot, and click interactions for the bar chart. Then,
+you should continue to use Altair to generate an interactive the transform filter should be applied to the other charts.
+visualization. Add a brush or click function, a tooltip, and • Layout organization: When generating new visualizations,
+a legend if different colors are used. we set the charts to the same size and arrange them
+Indicator: {A code template} sequentially. If the user selects charts to merge multiple
+views,weallowselectinguptosixchartstoavoidexcessive
+1 import altair as alt
+cognitiveload.TheLLMsshouldoutputthelayoutnomore
+2 import pandas as pd
+3 def plot(data: pd.DataFrame): than three charts in a row.
+4 # Data preprocessing • Color mapping: We built a data-to-color mapping rule
+5 <codes>
+withinthetaskspacebasedonQuandHullman’sguidelines
+6 # Chart generation
+7 chart = alt.Chart().mark bar().encode() [30], where one color corresponds to one data dimension
+8 return chart without reuse. For example, the same field should use the
+Output:{insight, visualization} same quantitative color scale across different views, while
+————————————-Structured insight generation different fields should use non-overlapping hues or palettes
+Input: {task, data, codes} to avoid confusion.
+Instruction: Run the codes to report an important insight Task progress calculation: In the analysis process, each
+forthistask:task.Youshouldoutputinsight,includingtext, node has a progress attribute that quantifies the task comple-
+insight type, parameters, data variables, and data values. tion degree. When the task is executed, the agent evaluates
+{Definitions of insight attributes.} the task’s completion status. If the task remains incomplete
+Indicator: {A few examples in JSON format} and needs further in-depth analysis, the progress is set to
+Output: {insight} 0%; otherwise, it is set to 100%. Upon determining a task
+asincomplete,theagentsuggestsadecompositionplan.Ifthe
+Visualizationgeneration:Foreachtask,themodelneedsto
+further decomposition is denied by the user, the progress is
+implementdataanalysisandvisualizationmethods,whereone
+set to 100%. Each recently executed task is represented as a
+task corresponds to one visualization, and the visualizations
+leafnode,initiatingabottom-uprefreshofprogressvaluesfor
+will be combined into multiple views when multi-variables
+non-leaf nodes across the tree (Fig. 3-e). The process for the
+associationanalysisisrequired,whichwewillintroducelater.
+main task is the average progress of two child tasks, which
+We use Vega-Lite via Altair [60] to generate visualizations.
+are user-confirmed nodes generated by task decomposition or
+Vega-Lite is a high-level grammar that can support the gener-
+recommendation. This hierarchical update process accurately
+ationofavarietyofvisualizationtypesinalow-codeway,and
+reflectstheanalysisstatusandensuresprogressvaluesaccount
+its declarative structure allows users to modify visualizations
+for both the agent’s assessments and user input.
+easily. As Altair only supports basic data transformation, we
+3) Task Decomposition: Upon the execution of a task, the
+leveragePython’sflexiblelibraries,allowingformorecomplex
+decomposer evaluates the quality of completion and decides
+analysis, such as regression and clustering. However, this
+whether to decompose and how (Prompt template 3). To
+mayintroduceinconsistenciesanderrorsbetweenanalysisand
+evaluate if the task is completed, the input includes tasks,
+visualizationcodesnippets.Toaddressthis,weprovideacode
+codes, and insight, while the output is a score ranging from
+scaffold in the prompt to let LLMs fill the empty to enhance
+0 to 10 and an explanation. Then, if decomposition is needed
+consistency and improve output stability.
+(i.e., its score is below a certain threshold, like 8), a detailed
+Structured insight generation: After generating visual-
+decomposition plan with the appropriate logic operators will
+ization and modeling codes, the executor needs to execute
+beproposed(Fig.3-f).Conversely,ifnofurtherdecomposition
+them to structure the results into insights. As the agent’s
+is required, the controller calls the recommender to propose
+coding environment1 does not support Altair, we use the local
+new exploratory tasks. According to the framework, the eval-
+uationprocesscanbeguidedbythefollowingguidelines.The
+1https://platform.openai.com/docs/assistants/tools/code-interpreter,Lastac-
+first is to determine if the initial solution adequately segments
+cessedMarch2024.CodeInterpreterallowsAssistantstowriteandrunPython
+codeinasandboxedexecutionenvironment. thedata,ensuringthattheanalysiscoversallrelevantsubsets.
+
+=== PAGE 7 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 7
+Fig. 4. The LightVA system comprises four views. Users can communicate with LLMs and control the planning process in (A) Chat view by selecting
+thetasksorsettingthedecompositionplan.ThegeneratedvisualizationandinsightsfromLLMsareupdatedin(B)Visualizationview.Taskflowview(C)
+visualizesthetaskplanningstructureandallowsuserstocontroltheanalysisprocess.Whenataskiscompleted,userscheckthedataexplorationsituation
+intheDatatablewithtablelens(D).
+Second, assess if the task requires further data mining or • AND: Subtasks are independent and executed in parallel
+visualization methods (e.g., regression, clustering) to extract order with multiple agents.
+deeper insights. • DOWN: This is a particular AND case. Subtasks are depen-
+dentandwillbeexecutedinserialorderwithasingleagent.
+We use an example to illustrate the decomposition process.
+PromptTemplate3(TaskDecomposition).
+———————————————————–Is complete If the task of analyzing vehicle weight and fuel efficiency is
+Input: {task, codes, insight} completed with a score of 6/10, the agent might suggest the
+Instruction: You need to judge whether the task requires following decompositions: T1: Segment the data into weight
+categories (light, medium, heavy) and analyze the fuel effi-
+further analysis. The complexity of the task can be con-
+ciency within each segment. T2: Within each weight category,
+sidered from data, data mining, and visualization methods.
+conductaclusteringanalysistoidentifypatternsorgroupings
+If the task appears incomplete, it needs to be decomposed
+that could further explain variations in fuel efficiency. T3:
+further. Please rate the task from 1-10. For example, if the
+Performamultipleregressionanalysistocontrolforadditional
+initial solution adequately segments the data or if the task
+variableslikeenginesizeandvehicleage.Theexecutionlogic
+requires advanced statistical analysis. You should output a
+would be (T1 DOWN T2 AND T3).
+score and explanation for your evaluation.
+Indicator: {A output template in JSON format} According to the logic, the agent executes each subtask
+Output: {score, explanation} and summarizes the subtasks’ insights to formulate an overall
+———————————————————–Decompose insight for the decomposed task. No further decomposition
+Input: {task, insight, score, explanation} is required if subtasks are all completed or up to the max
+Instruction: This task requires further analysis. According steps. Then, considering the goal and analysis results, the
+to the score and explanation, please generate no more than agent might propose revisiting previously proposed tasks or
+n subtasks and indicate the methods they use respectively recommending new exploration tasks.
+basedonthis.TherearetwooperatorsANDandDOWNin
+the execution order to connect tasks.
+B. LightVA Interface
+Indicator: {An example in JSON format}
+Output: {subtasks, execution order} The agent-based interface includes several views to enable
+user-controlled visual exploration, as shown in Fig. 4. To
+Ifataskrequiresdecomposition,adepth-firstdecomposition enable this, we provide four views: Chat view, Visualization
+process is employed. This process is guided by two factors. view, Task flow view, Data view. The design of the interaction
+One is a predefined maximum decomposition step depth followsthedesignconsiderationsofSectionIII-Bandprovides
+(k ), managing the depth (k) of decomposition (decompose three modes of interaction.
+max
+when k<k ). Another factor is the completeness of sub- Chat view: The exploration begins with the Chat
+max
+tasks. Here, we define each task that can be decomposed into view (Fig. 4A), an LLM-based chat box that facilitates direct
+subtasks with two types of logic. communication between users and agents through natural
+
+=== PAGE 8 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 8
+language interaction. The interaction between the user and agent-opposedtasks,employingbothGPT-3.5-turboandGPT-
+agent can switch between delegate, guide, and discuss. In 4-turbo.Eachtaskwastestedwithcodegenerationandinsight
+this interface, the user uploads data and inputs goals. The annotation, utilizing two different prompting techniques. This
+agent then responds with its understanding of the dataset and resulted in a total of 160 initial tests. We classified the
+suggestsnewtasksintheformofbuttons.Userscanbookmark errors in the test into five categories: (1) Unfamiliar dataset,
+tasks of interest, and tasks that are not of interest will not (2) Data binding issues, (3) Serialization issues, (4) Data
+be counted in the progress of exploration. The user can then transformation issues, (5) Syntax errors. More details about
+execute a task by clicking on it. Additionally, users can enter the test can be found in Appendix B. To address these
+their own tasks in the chat box. After submitting a task, types of errors effectively, we implemented specific error-
+the agent will provide a visualization of the production and handling strategies in three ways: before model generation
+insights obtained from the calculations in the Visualization withpromptingtechniques,withinthesystemaftergeneration,
+view (Fig. 4B). If the task needs to be decomposed, the task or delegated to users.
+decomposition plan will appear. The user can modify the Prompting techniques: (1) Few-shot prompting [61]: We
+logicalrelationshipbetweenthetaskandtheexecutionplanby provide examples to assist the model in better grasping the
+switchingthetextbutton.Theagentwillanalyzethetaskbased requirementsoftheoutputs.Forexample,whenmakinginsight
+on the user’s instructions and return the results of multiple annotations, examples can explain the insight components of
+subtasks.Duringtheexplorationprocess,userscanaskvarious the model. (2) Chain-of-thoughts [52]: We guide the model
+questions and discuss them with LLM in the dialog box, such through a thought plan with step-by-step instructions, which
+as the problem analysis method, understanding of the answer, is helpful in reasoning processes, such as task execution.
+and explanation for the recommendation. Withinsystemhandling:(1)Self-reflection[62]:Weallow
+Visualization view: This view presents visualizations and LLMs to examine and correct their actions and outputs. For
+insightsintheformofcards.Eachcardcontainsthetaskserial example,themodelshoulddebugcodesbasedontheobserva-
+number, the task content, the interactive visualizations, and tion of the error. Based on our test results, the self-correction
+the insights in rich text format. Users can modify the Vega- helped reduce around 40% initially identified errors, such as
+Lite JSON codes and insight text. To address the issue of syntax errors, spelling mistakes, and logical inconsistencies.
+cognitive load for the user, we allow the user to select which (2) Catching and feedback: Common syntax errors such as
+visualizationcardstheywanttoview,andtheseselectedcards matching quotes and parentheses, can be solved by rule-based
+are displayed in the main view while the remaining cards are solutions.Weclassifythesecommonerrorstohighlightwhich
+moved to the candidate set below. Additionally, the user can steps in the data analysis process the LLM made mistakes
+merge the selected cards to create an interactive linked view. rather than merely pointing out low-level errors.
+Moreover, users can modify and export the generated codes, User-side handling: Once errors are identified, the system
+which providing flexibility for those who need to customize notifiestheuser,andtheusermayeditthecodes.Additionally,
+their analyses further. we maintain the analysis history, allowing for a rollback to
+Task flow view: The task flow view updates as goals and the previous step if an error occurs during the execution of
+tasks are added, providing the user with a clear analysis of the current task. Users can choose a new task and remove the
+status and progress (Fig. 4C). Each node is a rectangular box failed task from the task flow.
+showing the task id, task type, and percent progress. The
+original task text appears when the cursor is over a node. V. USAGESCENARIO:EVENTANALYSIS
+Clicking on a node will update the visualization layout in
+To examine the effectiveness of our framework, we demon-
+the Visualization view. Hovering over the edge can see the
+strate the LightVA with IEEE VAST Challenge 2021 Mini-
+differencesindataandtasktypebetweentheassociatednodes.
+Challenge 3 2 as a usage scenario. The challenge’s goal is to
+In accordance with design considerations, we allow users to
+detect events that happened in Abila City during the evening
+choose unexplored tasks to be executed and delegate them to
+of January 23, 2014. The provided data include microblog
+the agent. Additionally, users can remove pending tasks from
+records and emergency dispatch records from a call center.
+theflowtoreduceworkload.Aclearexplorationstructuremay
+Our motivation for this scenario stems from two reasons.
+inspire user’s ideas.
+Firstly, it incorporates a representative blend of data types
+Data table view: In addition to task visualization, we
+and corresponding visualizations, encompassing text, spatial,
+provide a data lens visualization in Data table view (Fig. 4D)
+and temporal data, which is a typical VA scenario. Secondly,
+to guide users in the large exploration space. When a task
+the VAST challenge has the ground truth to support an
+is being completed, the user can observe the exploration of
+objectiveevaluationofourLightVA.WeusetheOpenAIGPT-
+theaccumulateddatausagefrequencyintablelensmode.The
+4 model in our work. For a more detailed demonstration of
+colorofthetablecellrepresentstherelativefrequencyofeach
+this scenario, a video is added to the supplemental materials.
+cell being explored. This observation may inspire the user to
+Initialization: In the beginning, we upload a dataset .csv
+discover regions of interest to propose new questions.
+file and a map outline data .json file at the Chat view. Then,
+we type a goal, “find some high-risk events in this city”.
+The dataset is introduced briefly, and the system proposes
+C. Error Handling
+four initial exploration tasks based on our goal: sentiment
+Werefertoerrorsasissuesthatcausethesystemtocrashor analysis, keyword analysis, tags analysis, and spatial anal-
+become unresponsive. Due to the inherent unpredictability of ysis (Fig. 4-a1). As the four tasks are aligned with our
+LLMoutputs,errorsmayoccuriftheoutputscannotbeparsed objectives, we bookmark them all in our progress. We then
+correctly,causingthesystemtocrashorbecomeunresponsive. prioritize the exploration of the first task - sentiment analysis.
+Toensurethesystemoperatescorrectlyandpreventsworkflow Upon submission, the agent generates a time varying card at
+disruptions, we implement an error-handling mechanism. the Visualization view (Fig. 4-B). The generated insight for
+To develop an effective error-handling mechanism, we con-
+ducted a test using two datasets in expert evaluation with 20 2https://vast-challenge.github.io/2021/MC3.html
+
+=== PAGE 9 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 9
+an interactive multi-view (Fig. 5). Through interaction on
+line chart (Fig. 5-a), we observe the histogram and map and
+discover that around 19:20, a “hit-and-run” event occurs: a
+“black van” first collides with a small car and then a cyclist,
+sparking a lot of discussions (Fig. 5-b, c). Additionally, we
+find that the fire occurred near the hit-and-run site. Later, we
+find that the black van heads west by 19:44, and a shooting
+occurs with the police, marking the period with the highest
+discussion intensity. Finally, at 21:17, the van guys surrender.
+Byobservingthetableandtaskflow,wefindthattheprogress
+of the goal reached 100%, and the data is basically covered,
+“type” “latitude” and “longitude” were explored frequently.
+Toconclude,inthisscenario,wefindsignificanteventssuch
+as Fire, Hit and Run, and Stand-off without manually coding
+and designing. With task planning, we generate eight views
+Fig.5. Alinkedviewforeventanalysis.Thetimeline,histograms,andmap with auto-summarized findings based on statistical analysis
+areselectedbytheusertogeneratealinkedview. Thechartscanbebrushed
+and a linked view to solve the goal rapidly. Compared to our
+orclickedtofiltereachother(a).Thepolarity,tags,andmessagecanbefound
+submission to the VAST Challenge [63], where we spent 2
+in the tooltip (b) of each view to support detailed analysis. By interactively
+exploring the linked views (c, d), we find some dangerous events, such as people, 2 days, and 6 hours on data preprocessing (including
+“Hitandrun”,“Standoff”,“Fire”. tagging, categorizing, and removing spam messages) plus 2
+people, 7 days, and 6 hours on interface construction and
+sentiment analysis indicates that the microblog records has
+analysis, totaling around 108 hours. In LightVA, we upload
+experienced a drop in average sentiment, especially with a
+the preprocessed data. Further construction and analysis take
+minimum polarity in 19:20, indicating potentially dangerous
+roughly 1 hour. This represents an efficiency increase of
+events (Fig. 4-b1).
+approximately 5 times, as the current effort is 25 out of 108
+Task recommendation: The agent not only generates the
+hours. Moreover, it is worth noting that data wrangling still
+visualization and findings but also evaluates them. For this
+require human involvement, especially in complex scenarios.
+sentiment analysis task, the agent gives a score of 8/10 and
+One potential avenue would be to integrate agent-assisted
+explainsthatthegeneratedresultshavebasicallycompletedthe
+data annotation and cleaning into LightVA’s workflow. In
+task, but further statistical analysis can be performed (Fig. 4-
+addition, there may be a lack of finesse and aesthetic appeal
+a3). As we prefer to start with a broad overview, we decide
+in interface visualizations and interactions when compared to
+not to decompose. The agent thus reminds us to revisit
+manualdesigns.Despitethis,theoverallcost-effectivenesshas
+our previous collection tasks in time. Thus, we choose the
+been enhanced. To address this concern, we offer support for
+second task (keyword analysis), which involves generating
+exporting the code, which can be further modified as needed.
+a preliminary keyword visualization. The generated finding
+summarizesthehighlyfrequentwordssuchas“fire”,“police”,
+and “POK”. In addition to the agent’s finding, clicking over
+VI. EXPERTSTUDY
+the stacked histogram for task 11 shows the time range of ToexaminetheeffectivenessofLightVAinVAsystemcon-
+eachword.Forexample,the“shooting”from19:40until19:50 structionandtaskrecommendation,weinvitedtwoVAexperts
+and“abilafire”from19:00until21:30.Thesefindingssuggest (denoted as E1 and E2) and a domain expert (denoted as E3)
+high-risk incidents like shootings and fires at first glance. to participate in the study. These experts have experience in
+The agent then recommends spatial analysis. From the Data data analysis and are familiar with using VA systems.
+table with lens, we can notice that there is indeed no latitude Participants background: E1 is a VA expert specializing
+and longitude explored so far, which indicates that agent in VA system development, topics around digital humanities,
+recommendationcanpayattentiontothedatacoverage(Fig.4- text-based data, road data for autonomous driving, spatiotem-
+D). After execution, the system generates a map with shapes poraldatasets,andtabulardata.E1oftenusesD3.jsandVue.js
+and messages, and the decomposition structure is updated on to develop VA systems. E2 is a VA expert with experience in
+the Task flow (Fig. 4-c1). We observe a higher concentration autonomous driving and social media, as well as work expe-
+of microblogs in two specific locations, which might indicate rience in business analysis. In daily work, E2 chooses to use
+incidents affecting public safety in those areas (Fig. 4-b2). tools like Tableau within the company to analyze quantitative
+Task decomposition: Based on the assessment of tasks data. The frequency of using data analysis and visualization
+and preliminary results, the agent recommends further de- toolsisaboutweekly.E3isadomainexpertanalyzingdatafor
+composition with three subtasks: clustering analysis, hotspots fast-movingconsumergoodsandsupplychains.E3frequently
+detection,andpredictionmodeling,withanANDandDOWN usesExcelandPowerBIandoccasionallyusesPythonforin-
+logic (Fig. 4-a3). To conduct a retrospective analysis, we depthanalysis.Theuseofdataanalysisandvisualizationtools
+choose the first two subtasks. The cluster analysis combines occurs on a daily basis.
+location and polarity to divide messages on the map into five Procedure: The study consists of three sessions. First,
+categories.Wefindthattwoplacesontheleftandrightsidesof we spent 15 minutes to know the experts’ backgrounds in
+themaphaveadistinctsentimentdistribution.Thesecondsub- data analysis and introduced our work by showing the video
+task, through analyzing message quantity, highlights hotspots, demonstration. Then, in the exploration phase, the experts
+visually indicating areas with dense messages. spend about 30 minutes exploring the system using the think-
+Linked-view analysis: Based on the suggestion of the aloud method [64]. Considering E3’s daily work requirements
+agent,wecanformtheanalyticallogicfrommulti-variablesto and aligning with their domain expertise, we opted for a
+concrete details. To find events more clearly, we select three dataset that mirrors their routine tasks. Due to data confi-
+tasks from the task flow view. The tasks include sentiment dentiality concerns, we substituted the original dataset with
+evolution charts, tag evolution charts, and a map to form a comparable one related to sales for E3’s use. Meanwhile,
+
+=== PAGE 10 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 10
+the right, by utilizing the area brushing feature on the scatter
+plot. E1 also discovers the performance differences between
+cars with different numbers of cylinders through the filter
+functionality between linked view (Fig. 6-a2).
+Another expert E2, demonstrates a focused interest in
+the data analysis, pursuing a clear analytical goal that was
+refined throughout the analysis process. Initially, E2’s goal
+was to identify vehicles that excel both in fuel efficiency
+andperformance(Fig.6-b1).However,recommendedinsights
+revealed a strong negative correlation between fuel efficiency
+(measured in MPG) and the majority of performance metrics,
+indicatingatrade-offbetweenhighfuelefficiencyandsuperior
+performancecapabilities.ThisinsightledE2toquicklyadjust
+theanalyticalgoaltowardsprioritizingfuelefficiencywhileen-
+suringperformancewasnotsignificantlycompromised(Fig.6-
+b2). Based on the plan proposed in task decomposition, E2
+exploredtherelationshipbetweenvariousvehicleperformance
+metrics and fuel efficiency with five charts. Finally, E2 com-
+bined these charts to generate linked view (Fig. 6-b3). By
+filtering points across views, E2 found several vehicle models
+meeting the revised goal.
+B. Domain Expert Evaluation: Sales Dataset
+To further evaluate LightVA, we conducted another study
+with a domain expert. E3 was interested in a sales dataset for
+a large store that provides detailed transaction information 4.
+The dataset contains 3,312 records with 21 fields, e.g., sales,
+discount, profit, and category.
+Atthebeginning,E3mentionedthehigh-timesensitivityof
+sales data for products in real-world scenarios. Therefore, in
+the initial tasks, E3 opted to explore the temporal trends of
+Fig. 6. The illustrations of the expert study using our framework with product sales volumes. In the histogram and insight (Fig. 7-
+cars dataset. Two VA experts show different analysis preferences during the a1) suggested by the agent, E3 found that the overall sales of
+exploration process. (A) E1 focuses on the creation of VA, progressively the item differ significantly from month to month. In the next
+decomposing the goal and employing statistical methods to complete the
+step of the decomposition plan, E3 categorized the products
+exploration. (B) E2 has a clear goal during the analysis, and continuously
+optimizes the goal with task decomposition, and leverages the linked-view to explore the temporal trends of different categories (Fig. 7-
+interactionstofindasatisfactoryanswer. a2). It was found that the temporal trends of the different
+categories were broadly similar, but the total sales volume
+the automotive dataset was designated for exploration by E1 of the technology category in November was the highest.
+and E2, fitting their respective areas of expertise. During Moreover, following the agent’s decomposition into another
+the system usage stage, we observed and recorded how they task: “Analyze sales trends of top-selling and bottom-selling
+interacted with the LightVA system. In the final stage of the products”, E3 noted that in the domain scenario, “finding
+interview, we spent approximately 30 minutes gathering the out how well products are selling can optimize inventory
+experts’ feedback on their usage experience of the system. to prevent stockouts and excess inventory.” Therefore, E3
+selected a task previously proposed but not executed, recom-
+mended for review by the agent, to rank the sales volumes of
+A. Visual Analytics Expert Evaluation: Cars Dataset
+different categories and subcategories (Fig. 7-a3). Based on
+In this study, we evaluate LightVA with E1 and E2 using the generated visualization, E3 discovered that the “phone”
+a well-known Auto MPG dataset 3. The dataset has 406 subcategory within the “Technology” category has the best
+records and 9 attributes, including brand, model, performance sales performance.
+indicators (such as horsepower and cylinders), and the year of After finding the answer to the previous task, E3 was
+manufacture and place of origin. interested in “analyze the correlation between sales and
+During the exploration process, E1 is more concerned with profit.”Uponreceivingthespecificscatterplot(Fig.7-b1),E3
+the construction of the VA system. At the beginning, E1 discovered that high sales do not always mean higher profit.
+sets the analytical goal to identify the factors influencing The expert speculated that this may be due to the impact
+fuel efficiency. E1 chooses one of the initially proposed tasks of discounts, as items with high sales often have significant
+for execution. After completing that task, the agent presents discounts. E3 confirmed this hypothesis through interaction
+a detailed decomposition plan. E1 then follows the agent’s with and analysis of the scatter plots of sales and profit, with
+guidance to continue selecting subsequent sub-tasks for fur- and without discount (Fig. 7-b2). To find the optimal discount
+ther decomposition and in-depth analysis. In the generated rateforproducts,E3chosetoanalyzetherelationshipbetween
+visualization (Fig. 6-a1), E1 discovers the differences in the discountandprofitacrossdifferentproductcategories.Accord-
+distribution of the number of vehicles produced by different ingtoFig.7-b3,thedifferencesbetweenproductcategoriesare
+origins across various performance ranges in the bar chart on minor, with all reaching maximum profit at a 10% discount.
+3http://archive.ics.uci.edu/ml/datasets/Auto+MPG 4https://www.kaggle.com/datasets/addhyay/superstore-dataset
+
+=== PAGE 11 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 11
+C. Results and Analysis
+This section discusses the expert’s exploration process and
+feedback on the system construction and task planning.
+Exploration process analysis: The exploration behaviors
+of the three experts differ significantly. VA expert E1 created
+the most visualization charts, with half including interactive
+features, emphasizing the generation of visualizations and
+the exploratory use of linked views. Furthermore, E1 delved
+deeper into task decomposition to employ more complex
+statistical methods, such as linear regression and polynomial
+regression. E2, with profound data analysis experience, did
+not strictly follow the agent’s recommendations during the
+exploration process. Instead, E2 refined and improved the
+analysis goals and exploration directions based on the results
+of previous tasks, proposing new questions and flexibly em-
+ploying interactive VA to complete the goal. E3, as a domain
+expert, possessed an understanding of the characteristics of
+Fig.7. Theexampleresultsofthedomainexpertstudywithasuperstoresales
+certain data attributes within the dataset, such as the relation-
+dataset. E3 implements analysis from overview to details and beyond with
+ships between discounts, sales, and profit. E3’s analysis was tworoundsoftaskdecomposition.(A)Thetop-sellingproductsandspecific
+grounded in real-world scenarios, selecting different analysis categories are found for inventory formulation. (B) The system effectively
+methods as needed to integrate data insights into practical pointedouttheimpactofdiscountsonsalesandprofits,promotinghypothesis
+applications. This suggests our system supports a degree of generationandverification.
+flexibility, responding effectively to users’ individual needs. Tableau(withAIversion,AskData)5,LightVAoffersseveral
+Feedback on system construction: E2 and E3 both ex- distinct advantages. While Tableau supports natural language
+pressed that interactive analysis through linked views fa- interfaces,taskrecommendation,andsinglevisualizationgen-
+cilitates a better understanding of the data. From the per- eration, it lacks support for task decomposition, multi-view
+spective of a VA expert, E1 commented that “basic charts visualization generation, and iterative human-in-the-loop task
+and interactions can be generated, which are sufficient for completion evaluation, which are the focuses of LightVA.
+simple data analysis problems, but modifications might be Meanwhile, there are some limitations to our framework.
+necessary for more complex issues.” E2 and E3 agreed that First, the framework may require more detailed guidelines for
+the system can effectively generate insights, enhancing the complex and specific domains, particularly in task customiza-
+accuracy of analysis. E2 suggested that generating insights tion, visualization methods, and model selection. A more
+based on awaring of user behavior would enhance the execu- comprehensivegrammarfortasksandinsightswouldimprove
+tion of tasks. Additionally, E3 noted the significant reduction model output evaluation and refinement. This necessitates
+in manual effort due to AI generation, stating, “Previously, extensive research and documentation, categorizing different
+using PowerBI required a lot of time and operations, but now tasks and domains to enhance the framework’s applicability.
+it only takes a sentence.” Second,functionalityinthedevelopmentofVAsystemsneeds
+Feedback on task planning: E3 observed that “the pro- to be improved, particularly features that facilitate authoring
+posedtasksarequitegood,indicatingthesystemhasacertain and version iteration. Third, the relatively small number of
+understanding of the dataset, and the language used is very participantsintheexpertstudylimitsthegeneralizabilityofthe
+standard.” E1 valued the system’s ability to decompose tasks results. Conducting a larger crowdsourced user study would
+as “the most useful part,” which can provide deeper analysis be beneficial in verifying the quality of the automated output
+and reveal certain characteristics of the data, especially for further and investigating the factors that contribute to users’
+those lacking domain-specific expertise. However, domain perceived quality.
+expert E3 cautioned that the decomposed tasks are not always The performance of LLMs in VA tasks: While LLM
+reliable, stating, “The process of task decomposition needs exhibits potentials, some of the limitations of LLM requires
+to be explained.” Regarding task recommendations, E1 seeks careful handling.
+more targeted suggestions that adhere closely to instructions • Outputstabilityandaccuracy:TheoutputofLLMscanbe
+without becoming too divergent. In contrast, E3 emphasizes unstable. During our evaluation, we encountered instances
+that approaching goals from different perspectives can yield where the model failed to follow instructions accurately,
+valuable insights and strategies in their work scenarios. These leading to parsing and execution failures in the generated
+differing viewpoints highlight the need for the planning algo- code.Inordertoaddressthisproblem,weproposeanerror-
+rithm to be adaptable to user preferences. handling mechanism. Although this mechanism helps to
+avoid errors making system crashes, additional LLM errors
+about incorrect facts should be detected and corrected. In
+VII. DISCUSSION thefuture,wecanincorporateLLMs’self-reflectiontosolve
+hallucination[65]andprovideinsightsonerrorssothatusers
+Thissectionoutlinesthelimitationsofourworkanddiscuss
+can work together to fix these errors.
+the implications learned from the research with the future
+• Response speed: From our test, GPT-3.5-turbo completes
+directions.
+tasksinsignificantlylesstimethanGPT-4-turbo.Toincrease
+Generalizability of the framework: Our framework is
+the running speed, we use a multi-agent parallel computing
+generalizable in two aspects. First, our conceptual framework
+strategy and error handling for time exceeding a certain
+unifiesthedevelopmentandusageofVAsystems,basedonthe
+connections between goals, tasks, visualizations, and insights. 5https://help.tableau.com/current/pro/desktop/en-us/ask data.htm, last ac-
+Secondly, compared with existing visualization software, e.g., cessedMarch2024
+
+=== PAGE 12 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 12
+threshold. A future direction could be to utilize caching ACKNOWLEDGMENTS
+mechanismssuchasGPTCache[66]toexploreacceleration
+We thank anonymous reviewers for their constructive com-
+strategies in data analysis scenarios.
+ments. This work is supported by the Natural Science Foun-
+• Problem-solvingability:OurtestresultsindicatethatLLMs
+can struggle with complex tasks, such as predictive model- dation of China (NSFC No.62472099).
+ing. This highlights the need for a broader evaluation of
+model capabilities across various complex domain-specific REFERENCES
+problems to derive guidelines or evaluation metrics for task
+planning and execution. Additionally, we found that LLMs [1] J.J.ThomasandK.A.Cook,IlluminatingthePath:AnR&DAgenda
+for Visual Analytics. National Visualization and Analytics Ctr, 2005,
+maystrugglewithprocessingissueslikemissingvaluesdue
+pp.69–104.
+to unfamiliarity with data. From the implementation side,
+[2] D. Keim, G. Andrienko, J.-D. Fekete, C. Go¨rg, J. Kohlhammer, and
+we should provide additional materials or tools and teach G. Melanc¸on, “Visual analytics: Definition, process, and challenges,”
+agents to process data effectively [67]. inInformationVisualization:Human-CenteredIssuesandPerspectives,
+• Domainknowledge:Insomescenarios,LLMsmaynothave 2008,vol.4950,pp.154–175.
+sufficient domain knowledge. To address this limitation, [3] A. Wu, D. Deng, F. Cheng, Y. Wu, S. Liu, and H. Qu, “In defence
+of visual analytics systems: Replies to critics,” IEEE Transactions on
+futureresearch canfocuson combiningretrievalaugmented
+Visualization and Computer Graphics, vol. 29, no. 1, pp. 1026–1036,
+generation(RAG)andfine-tuningforLLMstosolvespecific
+2023.
+domain tasks [68]. [4] D.Ceneda,T.Gschwandtner,T.May,S.Miksch,H.-J.Schulz,M.Streit,
+Injectingvisualizationdesignknowledge: Designknowl- and C. Tominski, “Characterizing guidance in visual analytics,” IEEE
+transactionsonvisualizationandcomputergraphics,vol.23,no.1,pp.
+edge is important in designing VA systems. In our imple-
+111–120,2016.
+mentation, we constrain color, interaction, and layout. These
+[5] D.Deng,A.Wu,H.Qu,andY.Wu,“DashBot:Insight-drivendashboard
+constraints are not exhaustive and we only consider them generationbasedondeepreinforcementlearning,”IEEETransactionson
+as preliminary. Further research can include more design VisualizationandComputerGraphics,vol.29,no.1,pp.690–700,2023.
+guidelines for the LLM with prompting techniques or multi- [6] B. Yu and C. T. Silva, “FlowSense: A natural language interface for
+modal models [69] to perceive and evaluate the effectiveness. visualdataexplorationwithinadataflowsystem,”IEEETransactionson
+VisualizationandComputerGraphics,vol.26,no.1,pp.1–11,2019.
+Besides, a memory module [70] can be integrated to make
+[7] Y. Wang, Z. Sun, H. Zhang, W. Cui, K. Xu, X. Ma, and D. Zhang,
+the agent evolve. In addition, interactions other than natural
+“DataShot:Automaticgenerationoffactsheetsfromtabulardata,”IEEE
+languagecanbedesignedtofacilitateuserinputofintentions, Transactions on Visualization and Computer Graphics, vol. 26, no. 1,
+such as sketching [71] or generating widgets [72]. pp.895–905,2020.
+Automation and personalization:Fromtheuserstudy,we [8] C. Demiralp, P. J. Haas, S. Parthasarathy, and T. Pedapati, “Foresight:
+found that users from different backgrounds have different Recommendingvisualinsights,”ProceedingsoftheVLDBEndowment
+International Conference on Very Large Data Bases, vol. 10, no. 12,
+needs. Some users have a clear idea of what they want and
+2017.
+need the agent to follow orders in detail, while others prefer
+[9] S. Hao, Y. Gu, H. Ma, J. Hong, Z. Wang, D. Wang, and Z. Hu,
+the agent to take the lead in a more automated way. This “Reasoning with language model is planning with world model,” in
+divergence in user preferences highlights the balance between Proceedings of the Conference on Empirical Methods in Natural Lan-
+useragency(thecontroltheymaintainoverdecisions)andthe guageProcessing,H.Bouamor,J.Pino,andK.Bali,Eds.,Dec.2023,
+automation of processes. In future studies, we could explore pp.8154–8173.
+[10] S.Sharan,F.Pittaluga,M.Chandrakeretal.,“LLM-Assist:Enhancing
+how different levels of agency and automation affect task
+closed-loop planning with language-based reasoning,” arXiv preprint
+performance and user satisfaction [32]. Additionally, users arXiv:2401.00125,2023.
+may require different levels of assistance in terms of breadth [11] J. Yang, A. Prabhakar, K. Narasimhan, and S. Yao, “InterCode: Stan-
+and depth. We could conduct further qualitative experiments dardizing and benchmarking interactive coding with execution feed-
+to test the differences in decision-making paths when experts back,”AdvancesinNeuralInformationProcessingSystems,vol.36,pp.
+23826–23854,2023.
+in visualization are assisted by agents [73], [74], comparing
+[12] S.-C.Liu,S.Wang,T.Chang,W.Lin,C.-W.Hsiung,Y.-C.Hsieh,Y.-P.
+these paths visually using graph algorithms. This could help
+Cheng, S.-H. Luo, and J. Zhang, “JarviX: A llm no code platform for
+us build a preference knowledge base for different user types, tabulardataanalysisandoptimization,”inProceedingsoftheConference
+enabling the model to simulate and adapt to users’ desired onEmpiricalMethodsinNaturalLanguageProcessing:IndustryTrack,
+paths, providing more personalized recommendations. 2023,pp.622–630.
+[13] V.Dibia,“LIDA:Atoolforautomaticgenerationofgrammar-agnostic
+visualizations and infographics using large language models,” in Pro-
+VIII. CONCLUSION ceedings of the 61st Annual Meeting of the Association for Compu-
+In this paper, we aim to reduce the complexities and tational Linguistics (Volume 3: System Demonstrations), D. Bollegala,
+R.Huang,andA.Ritter,Eds.,Jul.2023,pp.113–126.
+technical demands of carrying out visual analytics. Therefore,
+[14] L. Wang, S. Zhang, Y. Wang, E.-P. Lim, and Y. Wang, “LLM4Vis:
+We introduce LightVA, a lightweight visual analytics frame-
+Explainablevisualizationrecommendationusingchatgpt,”arXivpreprint
+work that supports task planning, insight analysis, and linked arXiv:2310.07652,2023.
+visualization generation based on human-agent collaboration. [15] R. Mao, G. Chen, X. Zhang, F. Guerin, and E. Cambria, “GPTE-
+Our framework utilizes LLM agents for task planning and val: A survey on assessments of chatgpt and gpt-4,” arXiv preprint
+execution. The framework employs a recursive approach in arXiv:2308.12488,2023.
+[16] W. Zhang, Y. Shen, W. Lu, and Y. Zhuang, “Data-Copilot: Bridging
+whichtheagentsrecommendtasks,breakdowncomplextasks
+billionsofdataandhumanswithautonomousworkflow,”arXivpreprint
+into subtasks, and generate visualization and data modeling
+arXiv:2306.07209,2023.
+codes to solve tasks. We develop a system that embodies our [17] Y. Zhao, Y. Zhang, Y. Zhang, X. Zhao, J. Wang, Z. Shao, C. Turkay,
+proposed framework, supporting users to analyze data based and S. Chen, “LEVA: Using large language models to enhance visual
+on the communication with LLM agents and use the task- analytics,”IEEETransactionsonVisualizationandComputerGraphics,
+driven generated VA system. A usage scenario and an expert pp.1–17,2024.
+[18] A. Wu, Y. Wang, X. Shu, D. Moritz, W. Cui, H. Zhang, D. Zhang,
+studysuggestthatLightVAnotonlyreducedthemanualeffort
+and H. Qu, “AI4VIS: Survey on artificial intelligence approaches for
+requiredbutalsoprovidednewopportunitiestoleverageLLMs data visualization,” IEEE Transactions on Visualization and Computer
+to facilitate visual data exploration. Graphics,vol.28,no.12,pp.5049–5070,2021.
+
+=== PAGE 13 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 13
+[19] Q.Wang,Z.Chen,Y.Wang,andH.Qu,“AsurveyonML4VIS:Apply- [39] S. M. Casner, “Task-analytic approach to the automated design of
+ingmachinelearningadvancestodatavisualization,”IEEEtransactions graphicpresentations,”ACMTransactionsonGraphics(ToG),vol.10,
+onvisualizationandcomputergraphics,vol.28,no.12,pp.5134–5153, no.2,pp.111–151,1991.
+2021. [40] B. Saket, A. Endert, and C¸. Demiralp, “Task-based effectiveness of
+[20] P. Ren, Y. Wang, and F. Zhao, “Re-understanding of data storytelling basicvisualizations,”IEEETransactionsonVisualizationandComputer
+tools from a narrative perspective,” Visual Intelligence, vol. 1, no. 1, Graphics,vol.25,no.7,pp.2505–2512,2018.
+p.11,2023. [41] R.Amar,J.Eagan,andJ.Stasko,“Low-levelcomponentsofanalyticac-
+[21] K. Wongsuphasawat, D. Moritz, A. Anand, J. Mackinlay, B. Howe, tivityininformationvisualization,”inProceddingsofIEEESymposium
+and J. Heer, “Voyager: Exploratory analysis via faceted browsing of onInformationVisualization. IEEE,2005,pp.111–117.
+visualization recommendations,” IEEE Transactions on Visualization [42] D.GotzandZ.Wen,“Behavior-drivenvisualizationrecommendation,”
+andComputerGraphics,vol.22,no.1,pp.649–658,2015. inProceedingsofthe14thinternationalconferenceonIntelligentuser
+[22] K.Wongsuphasawat,D.Moritz,A.Anand,J.Mackinlay,B.Howe,and interfaces,ser.IUI’09,2009,pp.315–324.
+J. Heer, “Towards a general-purpose query language for visualization [43] F.Bouali,A.Guettala,andG.Venturini,“VizAssist:aninteractiveuser
+recommendation,” in Proceedings of the Workshop on Human-In-the- assistant for visual data mining,” The Visual Computer, vol. 32, pp.
+LoopDataAnalytics,2016,pp.1–6. 1447–1463,2016.
+[23] V. Dibia and C¸. Demiralp, “Data2Vis: Automatic generation of data [44] L.Shen,E.Shen,Z.Tai,Y.Song,andJ.Wang,“TaskVis:Task-oriented
+visualizations using sequence to sequence recurrent neural networks,” visualizationrecommendation,”inEuroVis,2021.
+IEEE computer graphics and applications, vol. 39, no. 5, pp. 33–46,
+[45] A.Pandey,A.Srinivasan,andV.Setlur,“Medley:Intent-basedrecom-
+2019.
+mendations to support dashboard composition,” IEEE Transactions on
+[24] K. Hu, M. A. Bakker, S. Li, T. Kraska, and C. Hidalgo, “VizML: Visualization and Computer Graphics, vol. 29, no. 1, pp. 1135–1145,
+A machine learning approach to visualization recommendation,” in 2022.
+ProceedingsoftheSIGCHIConferenceonHumanFactorsinComputing
+[46] Y. Tian, W. Cui, D. Deng, X. Yi, Y. Yang, H. Zhang, and Y. Wu,
+Systems,2019,pp.1–12.
+“ChartGPT: Leveraging llms to generate charts from abstract natural
+[25] M.Zhou,Q.Li,X.He,Y.Li,Y.Liu,W.Ji,S.Han,Y.Chen,D.Jiang, language,”IEEETransactionsonVisualizationandComputerGraphics,
+andD.Zhang,“Table2Charts:Recommendingchartsbylearningshared
+pp.1–15,2024.
+tablerepresentations,”inProceedingsoftheACMSIGKDDConference
+[47] G.Li,X.Wang,G.Aodeng,S.Zheng,Y.Zhang,C.Ou,S.Wang,and
+onKnowledgeDiscovery&DataMining,2021,pp.2389–2399.
+C. H. Liu, “Visualization generation with large language models: An
+[26] J. Zhao, M. Fan, and M. Feng, “ChartSeer: Interactive steering ex-
+evaluation,”arXivpreprintarXiv:2401.11255,2024.
+ploratoryvisualanalysiswithmachineintelligence,”IEEETransactions
+[48] Y. Huang, Y. Zhou, R. Chen, C. Pan, X. Shu, D. Weng, and Y. Wu,
+onVisualizationandComputerGraphics,vol.28,no.3,pp.1500–1513,
+“Interactive table synthesis with natural language,” IEEE Transactions
+2020.
+onVisualizationandComputerGraphics,2023.
+[27] S.Zhang,Y.Wang,H.Li,andH.Qu,“AdaVis:Adaptiveandexplainable
+[49] M. M. Hassan, A. Knipper, and S. K. K. Santu, “ChatGPT as your
+visualization recommendation for tabular data,” IEEE Transactions on
+personaldatascientist,”arXivpreprintarXiv:2305.13657,2023.
+VisualizationandComputerGraphics,2023.
+[50] P. Ma, R. Ding, S. Wang, S. Han, and D. Zhang, “Demonstration of
+[28] H.Li,Y.Wang,S.Zhang,Y.Song,andH.Qu,“KG4Vis:Aknowledge
+InsightPilot: An llm-empowered automated data exploration system,”
+graph-based approach for visualization recommendation,” IEEE Trans-
+arXivpreprintarXiv:2304.00477,2023.
+actions on Visualization and Computer Graphics, vol. 28, no. 1, pp.
+195–205,2021. [51] X. He, M. Zhou, X. Xu, X. Ma, R. Ding, L. Du, Y. Gao, R. Jia,
+X.Chen,S.Hanetal.,“Text2Analysis:Abenchmarkoftablequestion
+[29] D.Raghunandan,Z.Cui,K.Krishnan,S.Tirfe,S.Shi,T.D.Shrestha,
+answering with advanced data analysis and unclear queries,” arXiv
+L.Battle,andN.Elmqvist,“Lodestar:Supportingindependentlearning
+preprintarXiv:2312.13671,2023.
+and rapid experimentation through data-driven analysis recommenda-
+tions,”arXivpreprintarXiv:2204.07876,2022. [52] J.Wei,X.Wang,D.Schuurmans,M.Bosma,b.ichter,F.Xia,E.Chi,
+Q.V.Le,andD.Zhou,“Chain-of-Thoughtpromptingelicitsreasoning
+[30] Z.QuandJ.Hullman,“Keepingmultipleviewsconsistent:Constraints,
+validations, and exceptions in visualization authoring,” IEEE Transac-
+inlargelanguagemodels,”AdvancesinNeuralInformationProcessing
+tionsonVisualizationandComputerGraphics,vol.24,no.1,pp.468–
+Systems,vol.35,pp.24824–24837,2022.
+477,2017. [53] S. Yao, D. Yu, J. Zhao, I. Shafran, T. Griffiths, Y. Cao, and
+[31] M.Sun,A.Namburi,D.Koop,J.Zhao,T.Li,andH.Chung,“Towards K. Narasimhan, “Tree of Thoughts: Deliberate problem solving with
+systematic design considerations for visualizing cross-view data rela- large language models,” Advances in Neural Information Processing
+tionships,”IEEETransactionsonVisualizationandComputerGraphics, Systems,vol.36,pp.11809–11822,2023.
+vol.28,no.12,pp.4741–4756,2021. [54] M. Besta, N. Blach, A. Kubicek, R. Gerstenberger, L. Gianinazzi,
+[32] H.Lin,D.Moritz,andJ.Heer,“Dziban:Balancingagency&automation J. Gajda, T. Lehmann, M. Podstawski, H. Niewiadomski, P. Nyczyk
+invisualizationdesignviaanchoredrecommendations,”inProceedings et al., “Graph of thoughts: Solving elaborate problems with large
+of the SIGCHI Conference on Human Factors in Computing Systems, languagemodels,”arXivpreprintarXiv:2308.09687,2023.
+ser.CHI’20,2020,pp.1–12. [55] T.Wu,M.Terry,andC.J.Cai,“AIChains:Transparentandcontrollable
+[33] D. Moritz, C. Wang, G. L. Nelson, H. Lin, A. M. Smith, B. Howe, human-ai interaction by chaining large language model prompts,” in
+andJ.Heer,“Formalizingvisualizationdesignknowledgeasconstraints: ProceedingsoftheSIGCHIConferenceonhumanfactorsincomputing
+Actionable and extensible models in draco,” IEEE Transactions on systems,ser.CHI’22,2022,pp.1–22.
+VisualizationandComputerGraphics,vol.25,no.1,pp.438–448,2018. [56] Y.Guo,D.Shi,M.Guo,Y.Wu,N.Cao,andQ.Chen,“Talk2Data:A
+[34] Y.Lin,H.Li,A.Wu,Y.Wang,andH.Qu,“DMiner:Dashboarddesign natural language interface for exploratory visual analysis via question
+miningandrecommendation,”IEEETransactionsonVisualizationand decomposition,” ACM Transactions on Interactive Intelligent Systems,
+ComputerGraphics,pp.1–15,2023. 2021.
+[35] A. Wu, Y. Wang, M. Zhou, X. He, H. Zhang, H. Qu, and D. Zhang, [57] M. Q. Wang Baldonado, A. Woodruff, and A. Kuchinsky, “Guidelines
+“MultiVision:Designinganalyticaldashboardswithdeeplearningbased for using multiple views in information visualization,” in Proceedings
+recommendation,” IEEE Transactions on Visualization and Computer oftheWorkingConferenceonAdvancedVisualInterfaces,ser.AVI’00,
+Graphics,vol.28,no.1,pp.162–172,2021. 2000,pp.110–119.
+[36] D.Shi,W.Cui,D.Huang,H.Zhang,andN.Cao,“Reverse-engineering [58] S. Khan, P. H. Nguyen, A. Abdul-Rahman, E. Freeman, C. Turkay,
+information presentations: Recovering hierarchical grouping from lay- and M. Chen, “Rapid development of a data visualization service in
+outsofvisualelements,”VisualIntelligence,vol.1,no.1,p.9,2023. an emergency response,” IEEE Transactions on Services Computing,
+[37] X.Li,Y.Zhang,J.Leung,C.Sun,andJ.Zhao,“EDAssistant:Supporting vol.15,no.3,pp.1251–1264,2022.
+exploratory data analysis in computational notebooks with in situ [59] R.Ding,S.Han,Y.Xu,H.Zhang,andD.Zhang,“QuickInsights:Quick
+code search and recommendation,” ACM Transactions on Interactive and automatic discovery of insights from multi-dimensional data,” in
+IntelligentSystems,vol.13,no.1,pp.1–27,2023. Proceedings of the International Conference on Management of Data,
+[38] O. Bar El, T. Milo, and A. Somech, “Automatically generating data ser.SIGMOD’19,2019,pp.317–332.
+explorationsessionsusingdeepreinforcementlearning,”inProceedings [60] A. Satyanarayan, D. Moritz, K. Wongsuphasawat, and J. Heer, “Vega-
+ofthe2020ACMSIGMODinternationalconferenceonmanagementof Lite:Agrammarofinteractivegraphics,”IEEETransactionsonVisual-
+data,2020,pp.1527–1537. izationandComputerGraphics,vol.23,no.1,p.341–350,jan2017.
+
+=== PAGE 14 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 14
+[61] T.Brown,B.Mann,N.Ryder,M.Subbiah,J.D.Kaplan,P.Dhariwal, APPENDIXA
+A.Neelakantan,P.Shyam,G.Sastry,A.Askell,S.Agarwal,A.Herbert- IMPLEMENTATIONDETAILS
+Voss, G. Krueger, T. Henighan, R. Child, A. Ramesh, D. Ziegler,
+J. Wu, C. Winter, C. Hesse, M. Chen, E. Sigler, M. Litwin, S. Gray, This appendix introduces prompt examples and a history of
+B.Chess,J.Clark,C.Berner,S.McCandlish,A.Radford,I.Sutskever, analysis during the analysis process.
+andD.Amodei,“Languagemodelsarefew-shotlearners,”inAdvances
+inNeuralInformationProcessingSystems,H.Larochelle,M.Ranzato,
+R.Hadsell,M.Balcan,andH.Lin,Eds.,vol.33,2020,pp.1877–1901. A. Task Planning and Execution Algorithm
+[62] N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao,
+Here is the task planning and execution algorithm we
+“Reflexion: language agents with verbal reinforcement learning,” in
+Proceedingsofthe37thInternationalConferenceonNeuralInformation introduce in Section IV-A.
+ProcessingSystems,ser.NIPS’23,2024.
+[63] L.Peng,Y.Zhao,Y.Hou,Q.Wang,S.Shen,X.Lai,J.Gao,J.Dong, Algorithm 1 Task Planning and Execution
+Z.Lin,andS.Chen,“Mixed-initiativevisualexplorationofsocialmedia
+textandevents,”inProceedingsoftheIEEEConferenceonVisualization 1: function TPE(Goal G, Task T, Data D, History H,
+andVisualAnalytics,2021. Decomposition depth k=1)
+[64] M. Van Someren, Y. F. Barnard, and J. Sandberg, “The think aloud 2: if T is empty then
+method: A practical approach to modelling cognitive,” London: Aca-
+demicPress,vol.11,no.6,1994. 3: T new ←Recommender(G,D)
+[65] Z.Ji,T.Yu,Y.Xu,N.Lee,E.Ishii,andP.Fung,“Towardsmitigating 4: H←Update(H,T new ) ▷ Add new tasks to history
+l C lm om h p a u l t l a u t c i i o n n a a ti l o L n in v g ia ui s s e ti l c f s r : efl E e M ct N io L n P ,” 2 i 0 n 2 F 3 i , n 2 d 0 in 2 g 3 s ,p o p f . th 1 e 82 A 7 s – s 1 o 8 c 4 ia 3 t . ionfor 5: return T new ,H
+[66] F.Bang,“GPTCache:Anopen-sourcesemanticcacheforllmapplica- 6: else
+tions enabling faster answers and cost savings,” in Proceedings of the 7: if k>k max then return {},False
+3rdWorkshopforNaturalLanguageProcessingOpenSourceSoftware, 8: result←Executor(T,D)
+2023,pp.212–218.
+[67] Y.Qin,S.Liang,Y.Ye,K.Zhu,L.Yan,Y.Lu,Y.Lin,X.Cong,X.Tang, 9: completed←Decomposer(T,result) ▷Evaluateif
+B.Qian,S.Zhao,R.Tian,R.Xie,J.Zhou,M.Gerstein,D.Li,Z.Liu, the task is completed and output score and expla-
+and M. Sun, “ToolLLM: Facilitating large language models to master nation
+16000+real-worldapis,”arxiv.2307.16789,2023.
+[68] L. Gao, J. Lu, Z. Shao, Z. Lin, S. Yue, C. Ieong, Y. Sun, R. J. 10: if completed is False then
+Zauner, Z. Wei, and S. Chen, “Fine-tuned large language model for 11: subtasks,logic←Decomposer(T,D)
+v IE is E u E ali T z r a a ti n o s n ac s t y io s n te s m o : n A Vi s s t u u a d l y iza o t n io s n el a f n -r d eg C u o la m te p d ut l e e r ar G n r in a g ph i i n cs e , d p u p c . a 1 ti – o 1 n 1 ,” , 12: for each T sub in subtasks do
+2024. 13: result[T sub ],H←TPE(G,T sub ,D,H,k+1)
+[69] X.Zeng,H.Lin,Y.Ye,andW.Zeng,“Advancingmultimodallargelan- 14: completed←logic(result)
+guagemodelsinchartquestionansweringwithvisualization-referenced 15: return completed,H
+instruction tuning,” IEEE Transactions on Visualization and Computer
+Graphics,pp.1–11,2024. 16: else
+[70] C. Packer, V. Fang, S. G. Patil, K. Lin, S. Wooders, and J. E. Gon- 17: T new ←Recommender(G,T,D,H)
+z a a r l X e i z v , :2 “ 3 M 1 e 0 m .0 G 85 P 6 T 0 : , T 2 o 0 w 23 a . rds llms as operating systems,” arXiv preprint 18: H←Update(H,T new ) ▷ Add new tasks to his-
+tory and update progress of tasks and goal
+[71] D. Masson, S. Malacria, G. Casiez, and D. Vogel, “DirectGPT: A
+direct manipulation interface to interact with large language models,” 19: return T new ,H
+in Proceedings of the 2024 CHI Conference on Human Factors in 20: return completed,H
+ComputingSystems,ser.CHI’24,2024.
+[72] P. Vaithilingam, E. L. Glassman, J. P. Inala, and C. Wang, “DynaVis:
+Dynamically synthesized ui widgets for visualization editing,” in Pro-
+The algorithm aims to achieve a specified goal through
+ceedings of the CHI Conference on Human Factors in Computing
+Systems,ser.CHI’24,2024. recursive task decomposition and execution. Given a Goal G,
+[73] L. Battle and J. Heer, “Characterizing exploratory visual analysis: A Task T, Data D, History H, and Decomposition depth k, the
+literature review and evaluation of analytic provenance in tableau,”
+algorithm initially checks if the task is empty. If so, it calls
+Computergraphicsforum,vol.38,no.3,pp.145–159,2019.
+[74] Y. Liu, T. Althoff, and J. Heer, “Paths Explored, Paths Omitted, Paths a task recommender to generate a new list of tasks, which
+Obscured: Decision points & selective reporting in end-to-end data is then updated in the history. If a task T is already defined,
+analysis,”inProceedingsoftheSIGCHIConferenceonHumanFactors
+thealgorithmcheckswhetherthecurrentdecompositiondepth
+inComputingSystems,ser.CHI’20,2020,pp.1–14.
+exceedsamaximumdepthk ;ifitdoes,itreturnsanempty
+max
+result and a failure flag.
+Ifthedepthiswithinlimits,thealgorithmexecutesthecur-
+rent task using an executor and then assesses task completion
+with a decomposer. If the task is incomplete, the decomposer
+further breaks down the current task into a list of subtasks,
+which are then recursively processed by the algorithm. The
+resultsarecombinedbasedonalogicalstructuretodetermine
+overall task completion. The algorithm updates the history
+with any newly recommended tasks and finalizes completion
+status accordingly.
+B. Prompt Examples
+This section provides examples of prompts and output
+results when using LLM in multiple stages, including task
+
+=== PAGE 15 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 15
+recommendation, visualization generation, insight generation, if no just leave it none. Every new task has a source.
+is completed, decompose planner, merge visualization and Second, it is recommended that previous unexplored tasks
+summarize insights. be revisited if they are suitable for analysis at this stage by
+OurprompttemplateintroducedinSectionIV-Aconsistsof considering the explored tasks. You just need to record the
+four abstract components: id in tasks to review in your json output, if no just leave it
+none.
+• Input: The data or context provided to the model that is
+You also need to label a task type for new tasks.
+necessary for executing the task. Example: A summary of
+At the end of your answer, you should write the tasks
+the data, the task description, and a code template.
+beginning with ```json and ending with ```, and the json
+• Instruction: Detailed directions that guide the model on
+data includes a list of new tasks and their source, the
+how to perform the task. Example: Instructions to write
+reviewed tasks and insight type will need to be analyzed.
+PythoncodefordataanalysisandvisualizationusingAltair,
+Like this:
+including adding interactive features like brush functions,
+tooltips, and legends. 1 {
+• Indicator: Examples or formats that illustrate what the 2 "tasks": ["","",""],
+3 "source": ["","",""],
+expected output should look like. Example: A partial code
+4 "tasks to review":[],
+snippet or formatted output that helps the model understand 5 "data variables":[],
+the structure and format of the final result. 6 "task type": ["","",""]
+7 }
+• Output: The result generated by the model based on the
+input and instructions provided. Example: The generated Each task is a sentence.
+Python code, the resulting visualization, and a JSON object An output example of recommendation.
+summarizing the insights.
+```json
+1) Task Recommendation: This stage’s prompt is designed 1 {
+to recommend new and previously unexplored tasks based on 2 "tasks": [
+3 "Determine the optimal number of cylinders that
+the goal and the analysis history.
+balance fuel efficiency and vehicle weight.",
+4 "Investigate the impact of year of manufacture on
+the relationship between weight and fuel
+PromptTemplate4(Proposeinitialtasks).
+efficiency.",
+Your need to come up with a short plan to help a user 5 "Perform a cluster analysis to identify groups of
+accomplish the goal:{goal}. Please recommend {n 0} ex- cars with similar weight and fuel efficiency
+profiles."
+ploratory tasks. For task type, you may consider the trend,
+6 ],
+correlation, category, distribution, etc., to explore the goal 7 "source": [
+from different aspects. Do not use advanced modeling 8 "9",
+9 "3",
+methods. At the end of your answer, you should write the
+10 "3"
+datasummaryandtasksbeginningwith```jsonandending
+11 ],
+with ```,. Summary no more than 100 words. Each task is 12 "tasks to review": [
+13 "4",
+a sentence.For data variables,the taskmay not correspond
+14 "5"
+to the data, so you need to go to the dataset and find the 15 ],
+corresponding data variables, and even if transformation is 16 "task type": [
+17 "Optimization",
+required,youneedtowritetheoriginalcolumnname.There
+18 "Historical Analysis",
+may be more than one column of data so it’s an array. No 19 "Cluster Analysis"
+need to say Here is the requested JSON format listing the 20 ],
+21 "data variables": [
+tasks:. Do not add other sentences after this json data.
+22 ["cylinders", "MPG", "Weight\ in\ lbs"],
+1 { 23 ["year", "Weight\ in\ lbs", "MPG"],
+2 "tasks": ["","",""], 24 ["Weight\ in\ lbs", "MPG"]
+3 "data variables":[], 25 ]
+4 "task type": ["","",""] 26 }
+5 } ```
+2) Visualization Generation: The following prompt is the
+visualization generation part of task execution. By inputting
+PromptTemplate5(Proposenewtasks).
+the task and data introduction, the agent generates the visual
+Based on the goal: “My goal is to analyze the fuel effi-
+and data analysis code using Python.
+ciency”, previously explored tasks and unexplored tasks,
+(Extracted from analysis history)
+PromptTemplate6(VisualizationGeneration).
+pleaserecommend3newtasks.Thedatasetnamedcars.csv
+For the given task “Evaluate the relationship between vehi-
+has already been uploaded for you.
+cle weight and fuel efficiency.”, data summary,
+First, supplement some new tasks for explored tasks by
+(Addadataintroduction)youneedtowritePythoncodesto
+considering the results of tasks already explored if needed.
+analyzethedataandsolvethistask.Thedatasetcars.csvhas
+Youjustneedtorecordtheidinsourceinyourjsonoutput,
+
+=== PAGE 16 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 16
+been read into a dataframe by pandas.read csv(). Just use
+34 y=alt.Y(’Origin:N’, axis=alt.Axis(title=’
+thevariable‘data’torefertothisdataframeanddonotread Country of Origin’)),
+anotherdata.Afterfinishingtheinsightanalysis,youshould 35 color=alt.Color(’Origin:N’, legend=alt.Legend(
+title="Origin")),
+continue to use Altair to generate the visualization. Ensure
+36 opacity=alt.condition(click, alt.value(0.9), alt.
+that each generated visualization has a brush function that value(0.2)),
+allows you to select a subset of the data. Please ensure 37 ).transform filter(
+38 brush
+that only one view is generated. No combination of views
+39 ).add selection(
+is required. Please give me the whole code, including data 40 click
+analysis and Altair, in a function called ‘plot(data)’. You 41 ).properties(
+42 width=600
+only need to give the function definition of plot(data), not
+43 )
+execute it. 44
+pleasewritethecodesinthisstructure:```python```,there 45 return alt.vconcat(scatter, histogram)
+is an example: ```
+```python
+Inactualanalysis,challengesmayarise,suchasoverlylarge
+1 import altair as alt datasets, unclear meanings of data attribute names, or highly
+2 import pandas as pd domain-specific data, which may prevent an LLM from fully
+3
+understanding the uploaded dataset. Summarizing the dataset
+4 def plot(data: pd.DataFrame):
+5 # Data preprocessing in natural language and using this as a prompt can help the
+6 <codes> LLM perform the analysis task more effectively.
+7 # Chart generation The data introduction includes a natural language descrip-
+8 chart = alt.Chart().mark bar().encode().properties
+tion of the column names of each variable in the data, the
+()
+9 return chart types of variables and some statistical indicators. The given
+``` output json format template and some existing descriptions of
+the data (or not) are passed to LLM as prompts and let it
+An output example of visualization generation.
+```python generate data introduction according to the given format.
+This is an example that we provide for the cars dataset.
+1 import altair as alt
+2 import pandas as pd 1 class DataProperty {
+3 2 column: string; // Column Name
+4 def plot(data: pd.DataFrame): 3 description: string; // Natural language
+5 # Ensure correct data types description
+6 data = data.astype({ 4 dtype: string; // Data type of the column
+7 ’Weight_in_lbs’: float, 5 std: number | null; // Standard deviation, null if
+8 ’Miles_per_Gallon’: float not applicable
+9 }).dropna(subset=[’Weight_in_lbs’, ’ 6 samples: string[]; // Sample values from the
+Miles_per_Gallon’]) # Remove rows with column
+missing values 7 nunique: number; // Number of unique values in the
+10 column
+11 # Create selection features 8 min: string; // Minimum value in the column
+12 click = alt.selection multi(fields=[’Name’]) 9 max: string; // Maximum value in the column
+13 brush = alt.selection(type=’interval’, encodings=[’x 10 }
+’])
+14 1 {
+15 # Base chart for scatter plot 2 "columns": [
+16 scatter = alt.Chart(data).mark circle(size=60).encode 3 "Name",
+( 4 "Miles per Gallon",
+17 x=alt.X(’Weight_in_lbs’, axis=alt.Axis(title=’ 5 "Cylinders",
+Vehicle Weight in lbs’)), 6 "Displacement",
+18 y=alt.Y(’Miles_per_Gallon’, axis=alt.Axis(title 7 "Horsepower",
+=’Fuel Efficiency (MPG)’)), 8 "Weight in lbs",
+19 color=alt.condition(brush, ’Origin:N’, alt.value 9 "Acceleration",
+(’lightgray’)), 10 "Year",
+20 opacity=alt.condition(click, alt.value(0.9), alt. 11 "Origin"
+value(0.2)), 12 ],
+21 tooltip=[’Name:N’, ’Weight_in_lbs’, ’ 13 "properties": [
+Miles_per_Gallon’, ’Year:T’, ’Origin:N’] 14 {
+22 ).add selection( 15 "column": "Name",
+23 brush 16 "description": "The make and model of the car."
+24 ).add selection( ,
+25 click 17 "properties": {
+26 ).properties( 18 "dtype": "object",
+27 width=600, 19 "std": null,
+28 height=400 20 "samples": [
+29 ) 21 "ford galaxie 500",
+30 22 "oldsmobile delta 88royale",
+31 # Base chart for histogram 23 "ford mustang ii"
+32 histogram = alt.Chart(data).mark bar().encode( 24 ],
+33 x=alt.X(’count()’, axis=alt.Axis(title=’Number 25 "nunique": 311,
+of Cars’)), 26 "min": "amc ambassador brougham",
+
+=== PAGE 17 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 17
+27 "max": "vw rabbit custom" 12 }
+28 } 13 }
+29 },
+30 { 4) Merge Visualization: For the different selected views,
+31 "column": "Miles per Gallon", given generates altair and vega-lite codes for these views,
+32 "description": "Fuel efficiency of the car,
+merges these views and adds interactive functions between
+measured in miles per gallon (MPG).",
+33 "properties": { views according to the given interaction rules.
+34 "dtype": "number",
+35 "std": 7.8159843125657815,
+36 "samples": [ PromptTemplate8(Mergevisualization).
+37 19.8, There are some Altair codes:
+38 18.0,
+(Add visualization codes)
+39 16.0
+40 ], for creating visualizations, please combine them into one
+41 "nunique": 129, chart and add interactive features. Do not change the
+42 "min": 9.0,
+number of charts in the codes list. Just use the variable
+43 "max": 46.6
+44 } ’data’ to refer to this dataframe and do not read another
+45 } data. You should continue use altair to generate linked
+46 ]
+visualization using given charts. I want these charts can
+47 }
+be brushed to filter each other. Please give me the whole
+3) Insight Generation: The following prompt is the insight codes including data analysis and chart part in a function
+generation part of task execution. Based on the python codes ‘plot(data)’. You only need to give the function definition
+in visualization generation,the agent generate the structured of plot(data), not execute it. please write the codes in this
+insight with examples. structure:```python ```”
+PromptTemplate7(InsightGeneration). An example of generated multiple linked-view.
+Please provide insight for this task: “Evaluate the relation-
+1 import altair as alt
+ship between vehicle weight and fuel efficiency.” with the
+2 import pandas as pd
+initial visualization and analysis codes. Based on previous 3
+data transformation process, you need to conduct insight 4 def plot(data: pd.DataFrame):
+5 # Data Analysis part for the first chart
+analysis further to report an important insight. Before gen-
+6 data[’issue_date’] = pd.to datetime(data[’
+eratingnaturallanguageinsighttext,youneedtospecifythe issue_date’])
+column names (data variables) and data values in the data 7 # Calculate total quantity of trading activity
+per day
+involved in the insight, as well as the insight type. Improve
+8 trading activity = data.groupby(’issue_date’).agg(
+insight text based on these. Note that if data variables are total quantity=(’quantity’, ’sum’)).
+usedininsighttext,usetheoriginalcolumnnamesdirectly. reset index()
+9 # Calculate percentage change in total
+Here is an example for your output:
+quantity from the previous day
+10 trading activity[’quantity_change’] =
+1 {
+trading activity[’total_quantity’].pct change
+2 "text": "There is a correlation between A and B,
+()
+indicating xx generally exhibit lower B for xx in
+11
+C.",
+12 # Data Analysis part for the second chart
+3 "type": "Correlation",
+13 # Group by issue_date and calculate
+4 "parameters": "negative",
+descriptive statistics for ’amount’
+5 "data variables": [‘A’, ‘B’],
+14 stats = data.groupby(’issue_date’)[’amount’].
+6 "data values": {
+describe().reset index()
+7 ‘A’: ‘2000 to 5000lbs’,
+15 stats = stats.melt(id vars=[’issue_date’],
+8 ‘B’: ‘10 to 35MPG’,
+value vars=[’min’, ’25%’, ’50%’, ’75%’, ’max
+9 ‘C’: ‘xx’
+’],
+10 }
+16 var name=’statistic’, value name=’
+11 }
+amount’)
+17
+An output example of insight generation. 18 # Create a shared selection for interactivity
+19 shared brush = alt.selection interval(encodings=[’x’
+1 { ])
+2 "text": "There is a strong negative correlation between 20
+Weight in lbs and Miles per Gallon, indicating 21 # Create the first chart: Trading Activity
+heavier cars generally exhibit lower Over Time
+Miles per Gallon.", 22 chart1 = alt.Chart(trading activity).mark line().
+3 "type": "Correlation", encode(
+4 "parameters": "negative", 23 x=alt.X(’issue_date:T’, axis=alt.Axis(title=’
+5 "data variables": [ Issue Date’)),
+6 "Weight in lbs", 24 y=alt.Y(’total_quantity:Q’, axis=alt.Axis(title
+7 "Miles per Gallon" =’Total Quantity’)),
+8 ], 25 tooltip=[’issue_date:T’, ’total_quantity:Q’]
+9 "data values": { 26 ).properties(
+10 "Weight in lbs": "1613 to 5140lbs", 27 title=’Trading Activity Over Time’,
+11 "Miles per Gallon": "9 to 46.6 MPG" 28 width=600,
+
+=== PAGE 18 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 18
+29 height=400 scoreandexplanation.Ifso,itreturnsthedecompositionplan,
+30 ).add selection( otherwise it returns empty.
+31 shared brush
+32 )
+33 PromptTemplate10(DecomposePlanner).
+34 # Create the second chart: Distribution of
+For the given goal: “My goal is to analyze the fuel effi-
+Transaction Amounts
+35 bar chart = alt.Chart(stats).mark bar().encode( ciency,”andtask:“Evaluatetherelationshipbetweenvehicle
+36 x=alt.X(’statistic:N’, axis=alt.Axis(title=’ weight and fuel efficiency.”, the generated derived some
+Statistic’)),
+insights: “There is a strong negative correlation between
+37 y=alt.Y(’amount:Q’, axis=alt.Axis(title=’Amount
+’)), Weight in lbs and Miles per Gallon, indicating heavier
+38 color=alt.Color(’issue_date:T’, legend=None), cars generally exhibit lower Miles per Gallon.” and visu-
+39 tooltip=[’issue_date:T’, ’statistic’, ’amount
+alizations, discriminating whether this task requires further
+’]
+40 ).properties( analysis, such as using more detailed data segmentation or
+41 title=’Distribution of Transaction Amounts’, advanced statistical methods.
+42 width=200,
+The completion score of this task is 7/10, with the reasons:
+43 height=400
+44 ).transform filter( “Metadata extracted and relationship identified, but further
+45 shared brush segmentation and in-depth analysis could reveal more in-
+46 )
+sights.”.Ifneeded,pleasegeneratenomorethan3subtasks
+47
+48 # Combine the charts using hconcat and indicate the methods they use respectively based on
+49 combined chart = alt.hconcat(chart1, bar chart). this.Youshouldwritethetasksbeginwith```jsonandend
+resolve scale(color=’shared’) with ```, and the json data includes a list of tasks like this:
+50
+51 return combined chart 1 {
+2 "tasks": ["","",""],
+5) IsCompleted: Basedonthetaskcontentandtheinsights 3 "execution order": "(Task 1 AND Task 2 AND Task 3
+)",
+generatedinthepreviousstep,theagentscoresthetaskaccord-
+4 "methods": ["","",""],
+ing to the degree of completion and gives explanations. 5 "data variables":[["",""],[],[]],
+6 "task type":["","",""]
+7 }
+PromptTemplate9(Iscompleted).
+For the given task: “Evaluate the relationship between Fordata variables,thetaskmaynotcorrespondtothedata,
+vehicle weight and fuel efficiency.”, and some derived soyouneedtogotothedatasetandfindthecorresponding
+insights: “There is a strong negative correlation between data variables, and even if transformation is required, you
+Weight in lbs and Miles per Gallon, indicating heavier need to write the original column. There are two operators
+cars generally exhibit lower Miles per Gallon.” and codes “AND” and “DOWN” in the execution order to connect
+to solve this task. tasks. “AND” indicates that all subtasks need to complete
+Youneedtojudgewhetherthetaskrequiresfurtheranalysis. successfullybutthereisnorequirementforexecutionorder,
+The complexity of the task can be considered from data, “DOWN” indicates that subtasks need to be executed step
+data mining, and visualization methods. If the task appears by step in order. Each task is a sentence no more than
+incomplete, it needs to be decomposed further. Please rate 20 words, methods include data segmentation, statistical
+the task from 1-10. For example, if the initial solution methods. If do not need to decompose, output {“tasks”:
+adequately segments the data or if the task requires ad- ‘null’}. No need to say Here is the requested JSON format
+vanced statistical analysis. You should output a score and listing the tasks:.
+explanation of no more than 20 words for your evaluation.
+An output example of whether decompose.
+You should write the result beginning with ```json and
+ending with ```, and the json data includes a score and 1 {
+2 "tasks": ["Segment data by Origin to compare regional
+an explanation. The output structure is like:
+differences in weight and fuel efficiency
+1 { correlations.","Apply linear regression to model the
+2 "score": "", relationship between weight and fuel efficiency.","
+3 "explanation": "" Investigate impact of Cylinders on fuel efficiency
+4 } within different weight categories."],
+3 "execution order": "(Task 1 AND Task 2 AND Task 3)",
+4 "methods": ["Data segmentation","Regression analysis","
+The output is: Segmentation analysis"],
+5 "data variables":[["Weight in lbs", "Miles per Gallon",
+1 { "Origin"],["Weight in lbs","Miles per Gallon"],["
+2 "score": 7/10, Cylinders", "Miles per Gallon", "Weight Category"]]
+3 "explanation": "Metadata extracted and relationship ,
+identified, but further segmentation and in−depth 6 "task type":["Analysis","Modeling","Investigation"]
+analysis could reveal more insights." 7 }
+4 }
+Another two examples of whether decompose. In both exam-
+6) WhetherDecompose: Theagentdetermineswhetherthe ples,the‘tasks’representthreesubtasksdecomposedfromthe
+task needs to be decomposed based on the task’s completion previoustask,andtheexecutionorderis‘AND’and‘DOWN’,
+
+=== PAGE 19 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 19
+which means that the decomposition tasks are executed in subtask. Here is the results for each sub-task: “There is
+the following logic and order: the first subtask is executed a strong negative correlation between Weight in lbs and
+in parallel with the second subtask, i.e., the decomposition Miles per Gallon, indicating heavier cars generally exhibit
+task is triggered again when either subtask fails, and then the lowerMiles per Gallon.”.Youroutputshouldbebeginwith
+third subtask is executed in serial order. ```json and end with ```, like this:
+1 { 1 {"summary insight":""}.
+2 "tasks": ["Segment data by Origin to compare regional
+differences in weight and fuel efficiency.", "Apply The output example of merge visualization.
+linear regression to model the relationship between
+weight and fuel efficiency.", "Investigate impact of 1 {"summary insight":"Vehicle weight negatively impacts
+Cylinders on fuel efficiency within different fuel efficiency, with the greatest effects seen in
+weight categories."], heavier, USA−made cars. A linear model quantified
+3 "execution order": "(Task 1 AND Task 2 DOWN Task 3)" this decrease as −0.0077 MPG per pound. Additionally
+4 } , increasing engine cylinders reduces MPG across all
+weight categories, more so in heavier vehicles."}.
+1 {
+2 "tasks": ["Investigate polynomial relationships between
+weight and MPG for each cylinder category.", "Model
+C. Task Flow
+interaction terms between cylinders, horsepower, and
+displacement to assess combined effects on MPG.", "
+Analysis history stores the path of user historical explo-
+Perform residual analysis to evaluate model fit and
+discover potential outlier influence."], ration. It is a task-driven directed graph flow. Each node
+3 "execution order": "(Task 1 AND Task 2 DOWN Task 3)" in the graph represents a task and the edges represent the
+4 }
+relationship between tasks. There are three types of nodes:
+7) Merge Visualization: For the different selected views, goal, task, subtask, and the edges include Decomposition,
+thegivengeneratesAltairandVega-Litecodesfortheseviews, enlightened,andreview.Subtaskreferstothenodeobtainedby
+merges these views, and adds interactive functions between task decomposition. The edge type connected from the parent
+views according to the given interaction rules. task node to the child subtask node is decomposition. The
+edge of recommendation represents the agent recommending
+new tasks, and the edge of review represents the agent rec-
+PromptTemplate11(Mergevisualization).
+There are some Altair codes: ommending review of nodes that have been proposed but not
+(Add visualization codes) explored. We provide an analysis history example.
+for creating visualizations, please combine them into one 1 {
+chart and add interactive features. Do not change the 2 "nodes": [
+3 {
+number of charts in the codes list. Just use the variable
+4 "id": 1,
+‘data’ to refer to this dataframe and do not read other 5 "group": 1,
+data. You should continue to use Altair to generate linked 6 "task": "My goal is to analyze influencing factors
+of fuel efficiency\n",
+visualization using the given charts. I want these charts can
+7 "type": "goal",
+be brushed to filter each other. First, you should ensure 8 "variables": null,
+both charts contain common key columns with consistent 9 "task type": null,
+10 "visualization": null,
+data formats for the selection fields. Second, you should
+11 "insight": null,
+add selections based on the chart type, such as a brush 12 "refined insight": null,
+on the time axis for the line chart, dual brushes for the 13 "summary insight": null,
+14 "chat text": "The dataset contains 406entries of
+scatter plot, and click interactions for the bar chart. Third,
+vehicle data, including name, MPG, engine
+the layout should be no more than three charts in a row. attributes, weight, acceleration, year, and
+Please give me the whole code, including the data analysis origin. It has some missing values and
+requires date−time conversion for the ’Year’
+and chart part, in a function ‘plot(data)’. You only need to
+column.",
+give the function definition of the plot(data), not execute 15 "error message": null,
+it. please write the codes in this structure:```python ```” 16 "execution order list": null,
+17 "progress": 0.5,
+18 "codes": null
+8) Summarize Insights: Given a batch of the same task, 19 },
+20 {
+decompose it into subtasks and their insights and execution
+21 "id": 2,
+orders, and summarize their insights. 22 "group": 1,
+23 "task": "Analyze the distribution of fuel
+efficiency across the dataset.",
+PromptTemplate12(SummarizeInsights). 24 "type": "task",
+Now the decomposed sub-tasks for the task “Evaluate the 25 "variables": [
+26 "Miles per Gallon"
+relationship between vehicle weight and fuel efficiency.”
+27 ],
+are executed. The decomposition logic is “(Task 1 AND 28 "task type": "distribution",
+Task 2 AND Task 3)”. You need to give a summary 29 "visualization": null,
+30 "insight": null,
+insight for the source task based on insight from each
+31 "refined insight": null,
+32 "summary insight": null,
+
+=== PAGE 20 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 20
+33 "chat text": null, 107 "y": {
+34 "error message": null, 108 "axis": {
+35 "execution order list": null, 109 "title": "Fuel Efficiency (MPG)
+36 "progress": 0.0, "
+37 "codes": null 110 },
+38 }, 111 "field": "Miles per Gallon",
+39 { 112 "type": "quantitative"
+40 "id": 3, 113 }
+41 "group": 0, 114 },
+42 "task": "Evaluate the relationship between vehicle 115 "mark": {
+weight and fuel efficiency.", 116 "size": 60,
+43 "type": "task", 117 "type": "circle"
+44 "variables": [ 118 },
+45 "Weight in lbs", 119 "name": "view 3"
+46 "Miles per Gallon" 120 },
+47 ], 121 {
+48 "task type": "correlation", 122 "encoding": {
+49 "visualization": { 123 "color": {
+50 "$schema": "https://vega.github.io/schema/vega− 124 "field": "Origin",
+lite/v5.15.1.json", 125 "legend": {
+51 "config": { 126 "title": "Origin"
+52 "view": { 127 },
+53 "continuousHeight": 300, 128 "type": "nominal"
+54 "continuousWidth": 300 129 },
+55 } 130 "opacity": {
+56 }, 131 "condition": {
+57 "data": { 132 "param": "param 3",
+58 "url": "http://127.0.0.1:5000/data/data 507d1 133 "value": 0.9
+eff−14b2−426d−b87a−b8cf18c9c741.json" 134 },
+59 }, 135 "value": 0.2
+60 "height": 400, 136 },
+61 "layer": [ 137 "size": {
+62 { 138 "condition": {
+63 "encoding": { 139 "test": {
+64 "color": { 140 "not": {
+65 "field": "Origin", 141 "param": "param 3"
+66 "legend": { 142 }
+67 "title": "Origin" 143 },
+68 }, 144 "value": 30
+69 "type": "nominal" 145 },
+70 }, 146 "value": 60
+71 "opacity": { 147 },
+72 "condition": { 148 "tooltip": [
+73 "param": "param 3", 149 {
+74 "value": 0.9 150 "field": "Name",
+75 }, 151 "type": "nominal"
+76 "value": 0.2 152 },
+77 }, 153 {
+78 "tooltip": [ 154 "field": "Weight in lbs",
+79 { 155 "type": "quantitative"
+80 "field": "Name", 156 },
+81 "type": "nominal" 157 {
+82 }, 158 "field": "Miles per Gallon",
+83 { 159 "type": "quantitative"
+84 "field": "Weight in lbs", 160 },
+85 "type": "quantitative" 161 {
+86 }, 162 "field": "Year",
+87 { 163 "type": "temporal"
+88 "field": "Miles per Gallon", 164 },
+89 "type": "quantitative" 165 {
+90 }, 166 "field": "Origin",
+91 { 167 "type": "nominal"
+92 "field": "Year", 168 }
+93 "type": "temporal" 169 ],
+94 }, 170 "x": {
+95 { 171 "axis": {
+96 "field": "Origin", 172 "title": "Vehicle Weight (lbs)"
+97 "type": "nominal" 173 },
+98 } 174 "field": "Weight in lbs",
+99 ], 175 "type": "quantitative"
+100 "x": { 176 },
+101 "axis": { 177 "y": {
+102 "title": "Vehicle Weight (lbs)" 178 "axis": {
+103 }, 179 "title": "Fuel Efficiency (MPG)
+104 "field": "Weight in lbs", "
+105 "type": "quantitative" 180 },
+106 }, 181 "field": "Miles per Gallon",
+
+=== PAGE 21 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 21
+182 "type": "quantitative" Ensure correct data types\n data = data.
+183 } astype({\n ’Weight in lbs’: float,\n ’
+184 }, Miles per Gallon’: float\n }).dropna(subset=[
+185 "mark": { ’Weight in lbs’, ’Miles per Gallon’]) #
+186 "size": 60, Remove rows with missing values\n\n # Create
+187 "type": "circle" selection features\n click = alt.
+188 } selection multi(fields=[’Name’])\n brush =
+189 } alt.selection(type=’interval’, encodings=[’x’]
+190 ], )\n\n # Base chart for scatter plot\n scatter
+191 "params": [ = alt.Chart(data).mark circle(size=60).
+192 { encode(\n x=alt.X(’Weight in lbs’, axis=alt.
+193 "name": "param 3", Axis(title=’Vehicle Weight in lbs’)),\n y=alt
+194 "select": { .Y(’Miles per Gallon’, axis=alt.Axis(title=’
+195 "encodings": [ Fuel Efficiency (MPG)’)),\n color=alt.
+196 "x" condition(brush, ’Origin:N’, alt.value(’
+197 ], lightgray’)),\n opacity=alt.condition(click,
+198 "type": "interval" alt.value(0.9), alt.value(0.2)),\n tooltip=[’
+199 }, Name:N’, ’Weight in lbs’, ’Miles per Gallon’
+200 "views": [ , ’Year:T’, ’Origin:N’]\n ).add selection(\n
+201 "view 3" brush\n ).add selection(\n click\n ).
+202 ] properties(\n width=600,\n height=400\n )\n\n
+203 }, # Base chart for histogram\n histogram = alt
+204 { .Chart(data).mark bar().encode(\n x=alt.X(’
+205 "name": "param 4", count()’, axis=alt.Axis(title=’Number of Cars
+206 "select": { ’)),\n y=alt.Y(’Origin:N’, axis=alt.Axis(
+207 "fields": [ title=’Country of Origin’)),\n color=alt.
+208 "Name" Color(’Origin:N’, legend=alt.Legend(title=\"
+209 ], Origin\")),\n opacity=alt.condition(click,
+210 "type": "point" alt.value(0.9), alt.value(0.2)),\n ).
+211 }, transform filter(\n brush\n ).add selection
+212 "views": [ (\n click\n ).properties(\n width=600\n )\n\n
+213 "view 3" return alt.vconcat(scatter, histogram)"
+214 ] 248 },
+215 } 249 {
+216 ], 250 "id": 7,
+217 "resolve": { 251 "group": 0,
+218 "scale": { 252 "task": "Segment data by Origin to compare
+219 "color": "independent", regional differences in weight and fuel
+220 "size": "independent" efficiency correlations.",
+221 } 253 "type": "sub task",
+222 }, 254 "variables": [
+223 "width": 600 255 "Weight in lbs",
+224 }, 256 "Miles per Gallon",
+225 "insight": { 257 "Origin"
+226 "text": "There is a strong negative correlation 258 ],
+between Weight in lbs and 259 "task type": "Analysis",
+Miles per Gallon, indicating heavier cars 260 "visualization": null,
+generally exhibit lower Miles per Gallon 261 "insight": null,
+.", 262 "refined insight": null,
+227 "type": "Correlation", 263 "summary insight": null,
+228 "parameters": "negative", 264 "chat text": null,
+229 "data variables": [ 265 "error message": null,
+230 "Weight in lbs", 266 "execution order list": null,
+231 "Miles per Gallon" 267 "progress": 0.0,
+232 ], 268 "codes": null
+233 "data values": { 269 },
+234 "Weight in lbs": "1613 to 5140lbs", 270 {
+235 "Miles per Gallon": "9 to 46.6 MPG" 271 "id": 8,
+236 } 272 "group": 0,
+237 }, 273 "task": "Apply linear regression to model the
+238 "refined insight": null, relationship between weight and fuel
+239 "summary insight": "Vehicle weight negatively efficiency.",
+impacts fuel efficiency, with the greatest 274 "type": "sub task",
+effects seen in heavier, USA−made cars. A 275 "variables": [
+linear model quantified this decrease as −0.00 276 "Weight in lbs",
+77 MPG per pound. Additionally, increasing 277 "Miles per Gallon"
+engine cylinders reduces MPG across all weight 278 ],
+categories, more so in heavier vehicles.", 279 "task type": "Modeling",
+240 "chat text": null, 280 "visualization": null,
+241 "error message": "null", 281 "insight": null,
+242 "execution order list": [ 282 "refined insight": null,
+243 "AND", 283 "summary insight": null,
+244 "DOWN" 284 "chat text": null,
+245 ], 285 "error message": null,
+246 "progress": 1, 286 "execution order list": null,
+247 "codes": "import altair as alt\nimport pandas as 287 "progress": 0.0,
+pd\n\ndef plot(data: pd.DataFrame):\n # 288 "codes": null
+
+=== PAGE 22 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 22
+289 } 366 }
+290 367 }
+291 ], 368 },
+292 "edges":[ 369 {
+293 { 370 "source": 3,
+294 "source": 1, 371 "target": 4,
+295 "target": 2, 372 "weight": 0.2760920571391645,
+296 "weight": 1.0, 373 "type": "Decomposition",
+297 "type": "Enlightenment", 374 "labels": [],
+298 "labels": [], 375 "differences": {
+299 "differences": { 376 "changes": {
+300 "changes": { 377 "variables change": {
+301 "variables change": { 378 "original": [
+302 "original": [], 379 "Weight in lbs",
+303 "new": [ 380 "Miles per Gallon"
+304 "Miles per Gallon" 381 ],
+305 ] 382 "new": [
+306 }, 383 "Weight in lbs",
+307 "type change": { 384 "Miles per Gallon",
+308 "original": [ 385 "Origin"
+309 "goal" 386 ]
+310 ], 387 },
+311 "new": [ 388 "type change": {
+312 "task" 389 "original": [
+313 ] 390 "task"
+314 }, 391 ],
+315 "insight change": { 392 "new": [
+316 "original": [], 393 "sub task"
+317 "new": [ 394 ]
+318 "DISTRIBUTION" 395 },
+319 ] 396 "insight change": {
+320 } 397 "original": [
+321 }, 398 "CORRELATION",
+322 "costs": { 399 "CORRELATION"
+323 "variables cost": 1.0, 400 ],
+324 "type cost": 1.0, 401 "new": [
+325 "insight cost": 1.0, 402 "CORRELATION",
+326 "total difference cost": 1.0 403 "ANALYSIS"
+327 } 404 ]
+328 } 405 }
+329 }, 406 },
+330 { 407 "costs": {
+331 "source": 1, 408 "variables cost": 0.18350341907227408,
+332 "target": 3, 409 "type cost": 1.0,
+333 "weight": 1.0, 410 "insight cost": 0.29289321881345254,
+334 "type": "Enlightenment", 411 "total difference cost": 0.276092057139164
+335 "labels": [], 5
+336 "differences": { 412 }
+337 "changes": { 413 }
+338 "variables change": { 414 },
+339 "original": [], 415 {
+340 "new": [ 416 "source": 3,
+341 "Weight in lbs", 417 "target": 5,
+342 "Miles per Gallon" 418 "weight": 0.20000000000000018,
+343 ] 419 "type": "Decomposition",
+344 }, 420 "labels": [],
+345 "type change": { 421 "differences": {
+346 "original": [ 422 "changes": {
+347 "goal" 423 "variables change": {
+348 ], 424 "original": [
+349 "new": [ 425 "Weight in lbs",
+350 "task" 426 "Miles per Gallon"
+351 ] 427 ],
+352 }, 428 "new": [
+353 "insight change": { 429 "Weight in lbs",
+354 "original": [], 430 "Miles per Gallon"
+355 "new": [ 431 ]
+356 "CORRELATION", 432 },
+357 "CORRELATION" 433 "type change": {
+358 ] 434 "original": [
+359 } 435 "task"
+360 }, 436 ],
+361 "costs": { 437 "new": [
+362 "variables cost": 1.0, 438 "sub task"
+363 "type cost": 1.0, 439 ]
+364 "insight cost": 1.0, 440 },
+365 "total difference cost": 1.0 441 "insight change": {
+
+=== PAGE 23 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 23
+442 "original": [
+443 "CORRELATION",
+444 "CORRELATION"
+445 ],
+446 "new": [
+447 "REGRESSION ANALYSIS",
+448 "MODELING"
+449 ]
+450 }
+451 },
+452 "costs": {
+453 "variables cost": 2.220446049250313e−16,
+454 "type cost": 1.0,
+455 "insight cost": 1.0,
+456 "total difference cost": 0.200000000000000
+18
+457 }
+458 }
+Fig. 8. Distribution of error types encountered across various attempts,
+459 },
+categorizedbywhethertheissuewasresolvedinasecondattemptorremained
+460 {
+unsolved. Error types include issues related to unfamiliar datasets, syntax,
+461 "source": 5,
+serialization,datatransformation,anddatabinding.
+462 "target": 2,
+463 "weight": 0.0,
+464 "type": "Review",
+465 "labels": [],
+– ‘DataFrame’ object has no attribute
+466 "differences": "Node(s) not found"
+467 } ‘reset src index’
+468 ] – Cannot reset index inplace on a Series to create
+469 }
+a DataFrame
+• Data Binding Issues: These errors occur when the model
+APPENDIXB incorrectlyreferencesvariablenamesthatdonotexistinthe
+LLMPERFORMANCETEST given context. This suggests that the model has difficulty
+maintaining consistency in variable naming and ensuring
+This appendix analyzes the performance of GPT-3.5-turbo
+that all referenced variables are defined and accessible
+and GPT-4-turbo on data analysis and visualization tasks. We
+within the code.
+tested 160 tasks across two datasets, focusing on error types
+and model efficiency. The results highlight common error – name ‘actuator line’ is not defined
+categories and compare the models’ performance in terms of – name ‘hp preusline’ is not defined
+error rates and time costs. • Serialization Issues: These errors arise when the model
+attemptstousedatatypesthatarenotcompatiblewithJSON
+serialization, which is required for certain operations such
+A. Error Analysis
+as visualization with Altair. These errors indicate that the
+To enhance the robustness of our system, we conducted model does not adequately understand the requirements for
+tests focusing on 2 datasets, with 20 tasks per dataset, uti- dataserializationandtheneedtouseJSON-compatibledata
+lizing GPT-3.5-turbo and GPT-4-turbo. Each task was tested types.
+with data analysis code generation and insight annotation.
+– Object of type Interval is not JSON serializable
+Both of these two steps tested two prompts to support the
+– Object of type Period is not JSON serializable
+choice of better results. This setting resulted in a total of
+• Data Transformation Issues: These errors indicate the
+2 (datasets) × 10 (tasks per dataset) × 2 (models) × 2
+model’s difficulty in converting data from one type to
+(codes generation prompts) × 2 (insight annotation prompts)
+anotherandidentifyingcorrectdatatypes.Thefirstexample
+= 160 initial results.
+demonstrates a failure to convert a string of concatenated
+To improve error handling, we allow the model to self-
+namesintoanumericformat,whilethesecondhighlightsthe
+debug again while we prompt the model with cached error
+challenge of correctly identifying and spelling field names.
+messages, yielding an overall 204 experimental results. In the
+– Could not convert ... to numeric
+first round, out of the 160 tasks, 44 errors were identified.
+– Unable to determine data type for the field
+Upon a second verification, 18 of these errors were resolved,
+"Origin"
+while 26 remained erroneous.
+1) Error Types: We classified these 70 (44+26) errors we • Syntax Errors: Syntax errors occurwhen the model gener-
+found into five categories, as illustrated in Fig. 8. ates code that does not adhere to the correct syntax rules
+of the programming language. These errors suggest that
+• Unfamiliar Dataset: These errors highlight the model’s
+the model may overlook essential syntax elements such as
+lack of understanding regarding the structure and methods
+matching parentheses or correctly structuring the code.
+applicable to the given dataset. The model attempts to use
+non-existent attributes or incorrect methods, indicating a – invalid syntax (<string>, line 37)
+gap in its knowledge about the dataset’s schema and the 2) Comparison of Models: Based on the analysis of error
+operations that can be performed on it. type distribution with model comparison. we found that:
+
+=== PAGE 24 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 24
+GPT-3.5-turbo has lower overall error counts: In terms
+ofthesecodegenerationtasktypes,theoverallerrorrateratio
+of GPT-3.5-turbo and GPT-4-turbo is 1:2. This indicates that
+GPT-4-turbo commits more errors overall compared to GPT-
+3.5-turbo, as shown by the larger counts of unsolved errors.
+Repair Ability of GPT-4-turbo: Despite the higher error
+rate, GPT-4-turbo shows significant repair ability in the sec-
+ond round, solving many errors that were initially unsolved
+(Fig. 9). This repair ability is evident across all error types,
+particularly in Unfamiliar Dataset and Data Binding Issues.
+Fig.9. Distributionoferrortypesacrosstwomodels(GPT-4-turboandGPT-
+3.5-turbo), showing the count of errors resolved in a second attempt or left
+unsolved.
+Fig.10. Distributionoferrortypesacrossvariousanalyticaltasks,highlight-
+3) Comparison of Tasks: The bar chart illustrates the rela- ingthesusceptibilityofeachtasktype(e.g.,correlation,trend,segmentation)
+tionship between various task types and specific error types to specific errors like syntax issues, data binding problems, and unfamiliar
+datasets.
+encountered in data analysis and visualization using large
+models. The tasks for the tests are shown in Table I. Here’s two generated codes and errors for Trend Analysis
+ForCorrelationAnalysis,theprimaryerrorsareDataTrans- and For Correlation Analysis:
+formation Issues and Data Binding Issues, with occasional • Trend Analysis has the highest occurrence of Data Bind-
+Syntax Errors. In Trend Analysis, the most frequent issues are ing Issues, suggesting frequent difficulties in linking data
+Data Transformation Issues, indicating challenges in convert- attributes correctly for trend-related tasks.
+ingdataformatsorstructures,andDataBindingIssues,which
+– Line 21: name ’top slowing’ is not defined
+point to problems in linking data with visualization elements.
+Segmentation Analysis also suffers from Data Transforma- 1 import altair as alt
+2 import pandas as pd
+tionIssuesandDataBindingIssues.ForPredictiveModeling,
+3
+significanterrorsincludeSerializationIssues,suggestingdiffi- 4 def plot(data: pd.DataFrame):
+cultiesindataserializationprocesses,alongwithDataBinding 5 # Data Analysis: Calculate Total Sales and Total
+Profit for each Product
+Issues.
+6 product summary = data.groupby(’Product Name’).agg(
+Variance Analysis encounters substantial Unfamiliar 7 Total Sales=pd.NamedAgg(column=’Sales’, aggfunc=’
+sum’),
+Dataset issues, highlighting challenges in working with
+8 Total Profit=pd.NamedAgg(column=’Profit’, aggfunc=
+new or unexpected data, and occasional Serialization Issues. ’sum’),
+Cluster Analysis is predominantly affected by Unfamiliar 9 Total Quantity=pd.NamedAgg(column=’Quantity’,
+aggfunc=’sum’)
+Dataset issues, reflecting problems with novel dataset, and
+10 ).reset index()
+some Data Transformation Issues. 11
+Aggregation Analysis shows minimal errors with an even 12 # Sort by Total Sales to find Top Selling and
+Bottom Selling Products
+distribution across different types, while Distribution Analysis
+13 top selling = product summary.sort values(by=’
+is mainly affected by Data Binding Issues. Margin Analysis Total_Sales’, ascending=False).head()
+exhibitsfewerrors,withUnfamiliarDatasetandDataBinding 14 bottom selling = product summary.sort values(by=’
+Total_Sales’, ascending=True).head()
+Issues being the most frequent.
+15
+Overall,UnfamiliarDatasetandDataBindingIssuesarethe 16 # Adding annotations: profit for top and bottom
+most prevalent errors across various task types, underscoring selling products
+17 top selling[’Annotation’] = ’Top Selling’
+the challenges in handling novel data and effectively linking
+18 bottom selling[’Annotation’] = ’Bottom Selling’
+data with visualization components. 19
+
+=== PAGE 25 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 25
+TABLEI
+TASKSANALYSIS:THETASKSAREDERIVEDFROMTHEDATASETSUSEDINTHEEVALUATIONANDPROPOSEDBYTHEAGENT.THE“Cars”DATASETIS
+ANALYZEDINTHEFIRSTTENTASKS,WHILETHE“Superstore”DATASETISANALYZEDINTHESUBSEQUENTTENTASKS.THETYPESOFTASKSARE
+LABELEDBYTHELLM.
+dataset task type
+Cars Analyze the distribution of fuel efficiency across the dataset. Distribution Analysis
+Cars Evaluate the relationship between vehicle weight and fuel efficiency. Correlation Analysis
+Cars Compare the average horsepower for vehicles of different origins. Comparative Analysis
+Cars Examine how vehicle characteristics have changed over time. Trend Analysis
+Cars Assess the distribution of engine cylinders in the dataset. Distribution Analysis
+Cars Segment data by Origin to compare regional differences in weight and Segmentation Analysis
+fuel efficiency correlations.
+Cars Applylinearregressiontomodeltherelationshipbetweenweightandfuel Predictive Modeling
+efficiency.
+Cars Investigate the impact of Cylinders on fuel efficiency within different Correlation Analysis
+weight categories.
+Cars Analyze the variance in MPG within each cylinder count across weight Variance Analysis
+categories.
+Cars Perform a cluster analysis to identify groups of cars with similar weight Cluster Analysis
+and fuel efficiency profiles.
+Superstore Analyze the correlation between sales and profit to understand how they Correlation Analysis
+are related at a product or category level.
+Superstore Aggregate sales by category and sub-category to identify which product Aggregation Analysis
+groups are performing best.
+Superstore Examine the distribution of sales and profit to determine common ranges Distribution and Outlier Analysis
+and any outliers or anomalies in the data.
+Superstore Compare average discount rates across different segments (Consumer, Correlation Analysis
+Corporate, Home Office) to assess the impact of discounts on sales and
+profit.
+Superstore Segment monthly sales data by product categories. Segmentation Analysis
+Superstore Analyze sales trends of top-selling and bottom-selling products. Trend Analysis
+Superstore Perform cluster analysis to group similar products based on sales trends Cluster Analysis
+and profitability.
+Superstore Investigate the impact of promotions or discounts on monthly sales trends Correlation Analysis
+by product category.
+Superstore Determine the product groups with the highest profit margin within each Margin Analysis
+category.
+Superstore Analyze the impact of seasonal trends on profit margins by category and Trend Analysis
+sub-category.
+20 # Combine the data for top and bottom selling 35 return chart
+for visualization
+21 annotated data = pd.concat([top slowing, • Correlation Analysis frequently encounters Syntax Errors
+bottom selling], axis=0)
+and Data Transformation Issues, indicating common prob-
+22
+23 # Chart part lemswithcodesyntaxanddatatypehandlinginthesetasks.
+24 brush = alt.selection interval(encodings=[’x’, ’y’], – invalid syntax (<string>, line 37)
+name=’Brush select’)
+25 chart = alt.Chart(annotated data).mark bar().encode(
+1 import altair as alt
+26 x=alt.X(’Product Name:N’, sort=None, title=’
+2 import pandas as pd
+Product Name’),
+3
+27 y=alt.Y(’Total_Sales:Q’, title=’Total Sales’),
+4 def plot(data: pd.DataFrame):
+28 color=alt.Color(‘Annotation:N’, legend=alt.
+5
+Legend(title=‘‘Product Category")),
+6 # Data Analysis part
+29 tooltip=[‘Product Name’, ‘Total Sales’, ‘
+7 # Perform linear regression using Altair’s
+Total_Profit’, ‘Total Quantity’]
+transform_regression
+30 ).add_selection(
+8 regression = alt.transform regression(
+31 brush
+9 ‘Weight in lbs’, ‘Miles_per_Gallon’, method
+32 ).transform_filter(
+=‘‘linear"
+33 brush
+10 )
+34 )
+11
+
+=== PAGE 26 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 26
+12 # Chart part that annotations make it harder for the model to handle
+13 brush = alt.selection_interval(encodings=[’x unfamiliar data. On the other hand, for data transformation
+’, ’y’], name=’brush’)
+issues, the model performs better with annotations, making
+14
+15 # Points for the scatter plot - brushable only 2 errors compared to 8 without. Serialization issues
+16 points = alt.Chart(data).mark_point(color=’ show an equal distribution of 7 errors for both annotated
+blue’).encode(
+and unannotated cases, while syntax errors are slightly higher
+17 x=’Weight_in_lbs:Q’,
+18 y=’Miles_per_Gallon:Q’, with annotations (4 errors) compared to without (1 error).
+19 tooltip=[’Name’, ’Weight_in_lbs’, ’ Resultshighlightthemodel’sdifficultyinmanagingadditional
+Miles_per_Gallon’]
+annotation complexity.
+20 ).add_selection(
+21 brush
+22 ).transform_filter( C. Insight Generation
+23 brush
+24 ) Amongall160tasks,afterself-debugging,134successfully
+25 generated insight text content that provided some level of
+26 # Line for linear regression - highlighted by
+analysis of the tasks. However, among these, 18 did not
+brush
+27 trendline = alt.Chart(data). generate the insight in the required JSON format.
+transform_regression( We conducted a statistical analysis to compare the success
+28 ’Weight_in_lbs’, ’Miles_per_Gallon’,
+rates of generating each key-value pair in the standardized
+method=’linear’
+29 ).mark_line(color=’red’).encode( insight dictionaries.
+30 x=’Weight_in_lbs:Q’, To generate the insights, we employed two different ap-
+31 y=’Miles_per_Gallon:Q’
+proaches. The first approach involved generating the insight
+32 ).transform_filter(
+33 brush in JSON format first, while the second approach generated
+34 ) thenaturallanguagetextfirst.Thefollowingaretheresultsof
+35
+these two different methods.
+36 # Combining both the points and trend line
+37 chart = points + trend aoxnli
+38
+39 return chart
+B. Visualization Annotations
+To further assess the model’s ability to generate visualiza-
+tions, such as highlighting insights on visualizations, which
+is more difficult than drawing an overview, we tested these
+two different situations. By comparing the error rate with or
+without annotation requirements, we find that adding annota-
+tionsdoesincreasetheprobabilityoferrors,especiallymaking
+errors from unfamiliar datasets and data binding.
+Fig. 12. The insight attributes generation success rates (e.g., text, type,
+parameters)basedondifferentprompts,withAnswerfirstorNaturalLanguage
+(NL)first.
+D. Time Cost
+Toevaluatetheefficiencyofthemodelsintermsofprocess-
+ingtime,wemeasuredthetimecostsforbothcodegeneration
+and insight generation tasks. From the point of view of time,
+GPT-3.5-turbo is significantly less than 4, which is 1/4 of the
+time of GPT-4-turbo.
+Code generation time: GPT-3.5-turbo demonstrates con-
+sistent performance with average times of 5.05 seconds for
+the cars dataset and 5.58 seconds for the superstore dataset,
+and relatively low variances of 1.32 and 2.34, respectively.
+Fig. 11. Error rates analysis by visualization prompts (annotated or non-
+Incontrast,GPT-4-turbohassignificantlyhigheraveragecode
+annotated).
+generation times of 20.79 seconds for the cars dataset and
+Specifically, for data binding issues, there are 12 errors 24.77 seconds for the superstore dataset, with much larger
+with annotations compared to 4 without, indicating that the variances of 22.65 and 61.71, respectively, indicating greater
+complexity introduced by annotations increases the likelihood variability and potentially less optimization.
+of errors. Similarly, for unfamiliar datasets, the model makes Insightgenerationtime:GPT-3.5-turboagainshowsstable
+19 errors with annotations but only 5 without, suggesting performance with average times of 3.36 seconds for the cars
+
+=== PAGE 27 ===
+JOURNALOFLATEXCLASSFILES,VOL.18,NO.9,SEPTEMBER2020 27
+Fig.13. Timecostanalysisforcodeandinsightgenerationacrossdifferent
+datasets(cars,superstore)andmodels(GPT-3.5-turbo,GPT-4-turbo),illustrat-
+ingthevariationsingenerationtimebasedonmodelanddatasetcombination.
+dataset and 3.94 seconds for the superstore dataset, and low
+variances of 0.44 and 0.70, respectively. On the other hand,
+GPT-4-turbohasmuchhigheraverageinsightgenerationtimes
+of21.39secondsforthecarsdatasetand32.43secondsforthe
+superstoredataset,withsignificantlylargervariancesof216.26
+and558.72,respectively,suggestingsubstantialvariabilityand
+a need for further optimization.
+Overall, GPT-3.5-turbo demonstrates more efficient and
+consistent performance in both code and insight generation
+tasks across different datasets. GPT-4-turbo, while potentially
+morepowerful,showshighertimecostsbutgreatervariability,
+suggestingitmaybemoresensitivetothecomplexityoftasks
+and datasets.

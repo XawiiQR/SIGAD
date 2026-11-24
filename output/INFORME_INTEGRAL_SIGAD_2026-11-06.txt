@@ -1,0 +1,2050 @@
+INFORME INTEGRAL DEL PROYECTO SiGAD
+Estado del paper, ideas, arquitectura, código, pruebas y trabajo pendiente
+Fecha de corte: 6 de noviembre de 2026. Zona de referencia: America/Lima.
+Autor del proyecto: Javier Wilber Quispe Rojas.
+Asesora indicada en los documentos: Ana María Cuadros Valdivia, UNSA.
+
+PROPÓSITO Y CRITERIO DE LECTURA
+
+Este archivo reúne el contexto necesario para entender, continuar y explicar el
+proyecto sin depender de recordar nuestras conversaciones. Reconstruye el trabajo
+que consta en los archivos y chats accesibles, y contrasta las ideas con el código
+que existe en la carpeta Tesis-2026 en la fecha de corte.
+
+No es una tesis terminada ni una certificación de resultados educativos. Distingue:
+IMPLEMENTADO: comportamiento identificable en el código actual.
+HISTÓRICO: idea, ejecución o versión anterior conservada en documentos o chats.
+PROPUESTO: diseño o evaluación todavía no completados.
+PENDIENTE DE VALIDACIÓN: mecanismo implementado sin evidencia suficiente de su
+validez pedagógica, metodológica o experimental.
+
+Se revisaron el artículo PDF de nueve páginas, el PDF de ocho páginas con la
+revisión de la asesora, borradores LaTeX y Markdown, el código del prototipo, sus
+pruebas, los estados históricos, los guiones de exposición y el historial de chats
+relacionados recuperado mediante la aplicación. El anexo identifica las fuentes.
+Las conversaciones no son una prueba de que una función siga vigente: cuando un
+chat y el código discrepan, este informe describe la discrepancia.
+
+La reconstrucción no garantiza recuperar conversaciones de otras cuentas, fuentes
+no conectadas o material borrado. Las imágenes antiguas y todos los binarios no se
+han inspeccionado visualmente uno por uno. El análisis de los PDF fue textual; los
+diagramas se contrastaron con sus descripciones y fuentes disponibles. No se hizo
+una nueva revisión bibliográfica en Internet ni una nueva prueba real con Groq.
+
+ÍNDICE
+
+01. Qué es el proyecto y cuál es su contribución
+02. Problema, objetivo y decisiones de alcance
+03. Evolución del trabajo y decisiones que cambiaron
+04. Fundamentos y responsabilidades de cada componente
+05. Dataset real y límites de las preguntas
+06. Arquitectura operativa y papel del LLM
+07. Fase 1: Problema
+08. BKT y política de asistencia realmente implementados
+09. Fase 2: Plan
+10. Laboratorio visual de calidad
+11. Fase 3: Datos
+12. Planificador experimental lightVA.py
+13. Tareas, subtareas e intervención pedagógica
+14. Papers estudiados y relación con SiGAD
+15. Análisis del paper y de sus versiones
+16. Recomendaciones de la asesora
+17. Objetivos de evaluación, procedimientos y métricas
+18. Inventario explicado del código y las interfaces
+19. Pruebas y evidencia técnica actual
+20. Discrepancias, riesgos y límites
+21. Caso completo para entender el proyecto
+22. Pendientes ordenados y próximos entregables
+23. Ejecución y reproducción
+24. Glosario y explicación breve del proyecto
+25. Fuentes y trazabilidad
+Anexos generados: inventario técnico, rutas, pruebas y huellas de archivos.
+
+
+01. QUÉ ES EL PROYECTO Y CUÁL ES SU CONTRIBUCIÓN
+============================================================
+
+SiGAD propone un sistema de guidance contextual, explicativo y adaptativo para
+favorecer habilidades de alfabetización en datos en usuarios novatos durante el
+ciclo PPDAC: Problema, Plan, Datos, Análisis y Conclusión.
+
+La finalidad educativa es que el usuario comprenda y tome decisiones sobre datos,
+y pueda asumirlas progresivamente con mayor autonomía. La tecnología organiza y
+materializa ese acompañamiento: cálculo local para obtener evidencia, evaluación
+de respuestas, seguimiento probabilístico de habilidades, reglas de ayuda y
+generación de intervenciones mediante un modelo de lenguaje.
+
+La contribución que se ha ido precisando es un mecanismo integrado de adaptación:
+evidencia del usuario -> estimación de habilidades -> decisión explícita de ayuda
+-> intervención contextual -> nueva actividad y evidencia. Su novedad y eficacia
+deben justificarse frente a antecedentes y comprobarse experimentalmente.
+
+PPDAC proporciona la estructura de trabajo. El andamiaje fundamenta cómo ofrecer,
+ajustar y retirar apoyo. BKT aporta una estimación del conocimiento respecto a
+habilidades concretas. La política decide el grado. El LLM evalúa o redacta dentro
+de contratos delimitados. El usuario continúa siendo quien explora y decide.
+
+La estructura de tareas por sí sola no es una contribución exclusiva: GUIAVisWeb
+y los trabajos sobre planificación ya organizan tareas y subtareas. Tampoco basta
+usar un LLM o dibujar cuatro niveles para demostrar andamiaje o aprendizaje.
+
+ESTADO REAL: existe un prototipo web con Problema, Plan y Datos. Problema y Plan
+incluyen seguimiento BKT; Datos ofrece preparación reversible y ayudas locales.
+Análisis y Conclusión aparecen en el diseño y en el planificador experimental,
+pero no se encontraron módulos web equivalentes que ejecuten esas dos fases.
+
+
+02. PROBLEMA, OBJETIVO Y DECISIONES DE ALCANCE
+============================================================
+
+El problema que el usuario ha defendido es la fragmentación del apoyo: los sistemas
+pueden ayudar en procedimientos concretos sin acompañar suficientemente las
+decisiones conectadas del proceso y sin adaptar la asistencia para aprender.
+
+Formulación de trabajo, aún necesitada de respaldo empírico y bibliográfico:
+Los sistemas de apoyo al análisis presentan limitaciones para acompañar de forma
+integrada a usuarios novatos con ayudas contextuales y explicaciones metodológicas
+que se ajusten a su desempeño y favorezcan habilidades de alfabetización en datos.
+
+Objetivo general formulado en las conversaciones:
+Desarrollar y evaluar un sistema de guidance contextual, explicativo y adaptativo
+para favorecer el desarrollo de habilidades de alfabetización en datos en usuarios
+novatos durante el ciclo PPDAC.
+
+Debe conservarse la conexión entre problema y objetivo. Cubrir PPDAC es parte del
+alcance; el resultado perseguido es favorecer el aprendizaje y la autonomía. Si se
+evalúa solo una tarea o una fase, las conclusiones educativas deben delimitarse a
+las competencias efectivamente medidas.
+
+Preferencias y decisiones del usuario recuperadas del historial:
+- Mantener la alfabetización en datos como tema central.
+- Trabajar con problema y objetivos según el formato de su programa; no imponer
+  preguntas de investigación o hipótesis como estructura obligatoria.
+- No reducir la propuesta a formular preguntas: eso corresponde a Problema.
+- Entender el motor pedagógico como articulador del mecanismo completo.
+- Apoyar decisiones y comprensión de datos, sin convertir toda actividad en una
+  lección de programación.
+- No obligar a escribir explicaciones extensas por cada clic. La autoexplicación
+  se discutió, pero no quedó adoptada como método central obligatorio.
+- Mantener Plan como planificación: no ejecutar tratamientos por llamarse fase 2.
+- Representar el trabajo mediante fases, tareas y subtareas, con productos y
+  evidencias que permitan adaptar el andamiaje.
+
+Delimitaciones necesarias: definir qué significa novato, conocimientos previos,
+tipos de CSV admitidos, análisis permitidos y competencias evaluadas. El dataset
+actual sirve de caso de uso; no demuestra que cualquier dataset sea compatible.
+
+
+03. EVOLUCIÓN DEL TRABAJO Y DECISIONES QUE CAMBIARON
+============================================================
+
+Primeros scripts, con fechas de archivo de junio:
+Se exploró el dataset con Pandas y se creó un tutor que recibía info/describe para
+explicar tipos y calidad. Se probaron proveedores y se generaron informes HTML.
+Estos experimentos anteceden al sistema web y conservan rutas y supuestos antiguos.
+
+Prototipo y estados de agosto:
+Los JSON históricos registran sesiones con límite de 30 segundos, respuestas
+libres, sugerencias y prescripciones. La fase 2 se denominaba estrategia, calidad
+y preparación. Las descripciones del LLM todavía incluían imprecisiones, como
+tratar No como medida, sugerir comparaciones entre estaciones sin comprobar su
+cantidad o usar lenguaje causal a partir de asociaciones.
+
+Historial Git disponible:
+Solo aparecen tres commits en la consulta del repositorio: a7d2a0a, «Fase uno
+culminada»; 3370c5a, «scatiualizacion del readme»; 39d3327, «Fase 2 culminada».
+El árbol de trabajo contiene numerosos cambios y archivos sin seguimiento. Estos
+mensajes documentan hitos históricos, no el grado actual de validación científica.
+
+Discusión de septiembre sobre aprendizaje y automatización:
+Se analizaron IA agentic, automatización, aprendizaje haciendo, autoexplicación,
+andamiaje, carga cognitiva y autonomía. Se corrigió una propuesta que exigía al
+usuario explicar por escrito cada decisión. La dirección adoptada fue observar
+acciones pertinentes y ofrecer ayuda contingente, definiendo evidencia suficiente
+sin cargar innecesariamente la interacción.
+
+Maduración de la arquitectura:
+Se separaron cálculo, evaluación, seguimiento BKT, política y generación. Se
+distinguió aumentar ayuda dentro de una tarea de retirarla en otra comparable.
+Se incorporaron principios de contingencia, fading y transferencia de control.
+Los borradores motor_adaptativo.py y motor_adaptativo-1.py exploran variantes,
+incluida evidencia atenuada por timeout y adivinación ajustada según la ayuda.
+Esos borradores no son el motor que app.py registra actualmente.
+
+Revisión de octubre:
+La asesora pidió precisar responsabilidades, habilidades, reglas y evidencia;
+reorganizar Propuesta y Metodología; y demostrar el mecanismo mediante casos.
+Se prepararon propuestas revisadas, figuras y un informe PDF de avance centrado
+en Problema. Parte de ese material quedó desactualizada al crecer el prototipo.
+
+Problema y Plan evolucionaron hacia sesiones del servidor, revisiones, rúbricas
+estructuradas, validación de salidas y tratamiento de fallos sin penalizar al
+estudiante. La interfaz incorporó selección múltiple y exploración visual.
+
+La fase Datos incorporó previsualización, comparación de escenarios, aplicación,
+deshacer y descarga. Se trabajó en mostrar qué cambia realmente al imputar,
+excluir o escalar, usando ventanas temporales y gráficos de distribución.
+
+Trabajo con LightVA a finales de octubre:
+El usuario pidió transformar una pregunta ya formulada en tareas y subtareas de
+las cuatro fases restantes. Se creó lightVA.py como experimento independiente.
+Su evolución resolvió salidas incompletas, interpretación ausente, dependencias
+inválidas, JSON mal formado, claves repetidas, coste de regeneración y errores 429.
+Se pasó de esquemas muy grandes a interpretación separada y actividades compactas
+que Python organiza. Se añadieron campos pedagógicos y cuatro ayudas candidatas.
+
+La última discusión sustantiva pide que la tarea de preprocesamiento escogida
+fundamente la intervención: dificultad observable, ayuda pertinente y nueva
+evidencia. La recomendación inicial de «LightVA es el que más aporta» se matizó:
+sirve para planificar tareas, pero no fundamenta por sí solo el andamiaje.
+
+
+04. FUNDAMENTOS Y RESPONSABILIDADES DE CADA COMPONENTE
+============================================================
+
+Alfabetización en datos:
+Capacidades para formular preguntas, comprender datos, evaluar calidad, seleccionar
+operaciones, interpretar evidencia y comunicar conclusiones y límites. Se utiliza
+Wolff y se discutieron marcos de competencias. Es necesario fijar un constructo
+operativo; alternar «datos» y «ciencia de datos» sin definición genera ambigüedad.
+
+PPDAC:
+Problema delimita qué conocer; Plan decide la estrategia; Datos obtiene u organiza
+y prepara; Análisis produce evidencia; Conclusión responde y comunica límites.
+El prototipo parte de un CSV ya existente: no implementa por ello toda recolección
+de datos posible. El ciclo puede ser iterativo conceptualmente, aunque la web
+actual solo materializa parte de esa navegación.
+
+Guidance:
+Ayuda para superar dificultades en la actividad analítica. Se emplean los grados
+Orientar, Dirigir y Prescribir asociados a Ceneda. Autónomo es una condición
+operativa añadida para trabajar sin pistas específicas. Los grados describen
+intensidad y control, no una escala de dificultad intrínseca del contenido.
+
+Andamiaje:
+Fundamenta apoyo contingente, retirada progresiva y transferencia de responsabilidad.
+No es una función que ejecute una llamada y produzca datos para BKT. Tampoco obliga
+a seguir siempre una escalera fija ni convierte la inactividad en desconocimiento.
+Los documentos recurren a Wood, Bruner y Ross, Vygotsky y Van de Pol. Kalyuga y
+Kapur se discutieron como argumentos complementarios para el intento autónomo;
+no validan automáticamente los umbrales o temporizadores específicos de SiGAD.
+
+BKT:
+Modelo probabilístico del conocimiento asociado a habilidades definidas. Produce
+estimaciones, no una observación directa de dominio ni una nota final de toda la
+alfabetización. Adoptar cuatro criterios como habilidades rastreables es una
+hipótesis de modelado que necesita justificación y calibración.
+
+Motor/política:
+Convierte desempeño, grado actual, estimaciones y reglas en decisiones registrables:
+mantener, aumentar, reducir o iniciar una verificación. En el código, motor_fase1.py
+reúne estimación y política en una clase; la separación conceptual no implica que
+ya existan servicios independientes para cada responsabilidad.
+
+LLM:
+Tiene dos papeles diferenciados: evaluar respuestas mediante rúbrica y generar
+contenido de ayuda. Un mismo proveedor/modelo puede hacer ambos con prompts
+distintos. No decide directamente los parámetros BKT ni el grado de asistencia.
+Sí influye indirectamente: si puntúa distinto, la política puede tomar otro camino.
+
+Explicaciones:
+Una recomendación dice qué hacer. Una explicación metodológica ayuda a entender
+por qué o bajo qué condiciones. Explicar el guiado exige mostrar la evidencia y
+regla que motivaron la ayuda. No todo texto del LLM es explicabilidad fiel del
+sistema, y una probabilidad BKT visible no demuestra que el usuario la comprenda.
+
+
+05. DATASET REAL Y LÍMITES DE LAS PREGUNTAS
+============================================================
+
+Archivo utilizado por defecto: Data/Data.csv.
+Recalculado durante esta revisión: 35 064 filas y 18 columnas.
+Estación: Wanshouxigong, una sola categoría con 35 064 registros.
+Periodo: 2013-03-01 00:00:00 a 2017-02-28 23:00:00.
+El perfil detecta intervalo horario de 3 600 segundos, cero fechas inválidas,
+cero fechas repetidas y cero intervalos irregulares. Duplicados exactos: cero.
+Versión de perfil calculada por Explorador: d11ef541ac2c8d94.
+
+Columnas y papel:
+No: identificador del registro.
+year, month, day, hour: componentes de fecha/hora.
+PM2.5, PM10, SO2, NO2, CO, O3: medidas de contaminantes.
+TEMP, PRES, DEWP, RAIN, WSPM: medidas meteorológicas.
+wd: dirección del viento, categoría con 16 valores observados.
+station: identificador categórico de estación.
+
+Faltantes calculados en el CSV actual:
+PM2.5 696; PM10 484; SO2 669; NO2 754; CO 1 297; O3 1 078;
+TEMP 19; PRES 19; DEWP 19; RAIN 19; wd 79; WSPM 13.
+No, componentes temporales y station: cero faltantes.
+
+Los nombres y explicaciones del prototipo se apoyan en el caso PRSA. Las unidades
+y significado científico deben confirmarse con el diccionario de datos. No se
+deben reutilizar como verdad las unidades que un LLM escribió en estados antiguos.
+
+Consecuencias para el proyecto:
+- No se puede comparar estaciones de monitoreo con este archivo: solo hay una.
+- «Estaciones» puede significar estaciones de monitoreo o temporadas del año;
+  la intención requiere aclaración cuando sea ambigua.
+- station no proporciona coordenadas. El CSV no tiene latitud/longitud para mapas.
+- No es válido interpretar asociación meteorológica como causalidad demostrada.
+- Un extremo de PM2.5 puede ser un episodio real que importa conservar.
+- Un percentil alto describe posición relativa; no demuestra peligrosidad sanitaria.
+- Que falte un valor en una celda es distinto de que no exista un registro temporal.
+- Datos horarios correlacionados requieren cautela si se proponen pruebas o modelos.
+
+
+06. ARQUITECTURA OPERATIVA Y PAPEL DEL LLM
+============================================================
+
+Recorrido principal:
+Navegador -> app.py/Flask -> módulo de fase -> cálculo/contexto -> evaluador o
+generador de agente.py -> Groq -> validación local -> motor/sesión -> interfaz.
+
+app.py carga el CSV al iniciar y registra los módulos de las tres fases. Los
+cálculos de gráficos, rangos, faltantes, IQR y tratamientos se realizan con
+Python/Pandas/NumPy. El frontend usa JavaScript, HTML/CSS y gráficos SVG.
+
+MotorAnalisis usa el cliente OpenAI con base de API de Groq y el nombre de modelo
+openai/gpt-oss-20b definido en el código. Esto describe la configuración local;
+no garantiza disponibilidad, precio o cuota del servicio en una fecha futura.
+
+Operaciones actuales destacadas de agente.py:
+- evaluar_problema_fase1: rúbrica JSON; temperatura 0.
+- generar_apoyo_problema_fase1: pista contextual; temperatura 0,3.
+- generar_opciones_problema_fase1: cuatro opciones; temperatura 0,3.
+- prescribir_opcion_problema_fase1: escoger índice y explicar; temperatura 0.
+- evaluar_plan_fase2: evaluación JSON con contexto compacto, límite de salida y
+  rechazo explícito de respuestas truncadas.
+- generar_apoyo_plan_fase2: generación acorde al grado solicitado.
+
+Las llamadas web examinadas usan límites de tiempo del proveedor. La fase 2
+desactiva reintentos automáticos del SDK para su evaluación. lightVA.py tiene
+su propia política de reintentos. No debe suponerse que ambos clientes se
+comportan igual ante fallos o consumen lo mismo.
+
+El LLM no recibe el CSV completo en estas rutas nuevas. Se envían respuestas,
+nombres/roles de columnas, cobertura y diagnósticos o resúmenes de visualización.
+La fase 1 compacta el gráfico a notas, variables y cantidades de marcas/paneles,
+en vez de remitir todos los puntos. La fase 2 compacta metadatos e historial;
+su cliente retiene los últimos dos intentos al construir la llamada compacta,
+aunque otras capas conservan más contexto. El perfil de LightVA incluye también
+ejemplos de categorías y estadísticas locales.
+
+Esta separación ayuda a anclar el contenido a los datos, pero no garantiza que
+el LLM interprete bien una pregunta, aplique correctamente la rúbrica o proponga
+un método científicamente adecuado. La validación estructural controla formato
+y referencias verificables; hace falta evaluar la calidad semántica.
+
+
+07. FASE 1: PROBLEMA
+============================================================
+
+Objetivo: formular una pregunta con propósito, alcance, variables pertinentes y
+viabilidad respecto al dataset. Archivos principales: fase1.py, motor_fase1.py,
+front/fase1.js y front/fase1.css.
+
+Explorador crea una copia estable, detecta roles, calcula perfil temporal/espacial
+y habilita vistas según condiciones. La clasificación por nombre/tipo es
+heurística. No identifica automáticamente toda semántica de un CSV arbitrario.
+
+Vistas definidas actualmente en VISTAS:
+1. Evolución temporal: medias por mes, observaciones disponibles y huecos.
+2. Ciclicidad: valores agregados por mes y hora; un patrón visual no confirma un
+   ciclo estadístico ni sustituye una descomposición temporal.
+3. Distribución: histograma.
+4. Variabilidad: cajas por mes, mediana y cuartiles.
+5. Relaciones: dispersión entre medidas con registros coincidentes.
+6. Frecuencias: conteos por categoría.
+7. Comparación: media de medidas agrupadas por categoría.
+
+La mención histórica de «cinco vistas» quedó corta: el código actual tiene siete
+tipos. La selección múltiple permite paneles o varias series según la vista.
+Las vistas compatibles preservan selección; relaciones considera pares y declara
+insuficiencias. Para muchos paneles hay paginación. Las unidades no se normalizan
+automáticamente para hacerlas comparables visualmente.
+
+Flujo pedagógico:
+Autónomo permite explorar y formular. Orientar agrega una pista sin resolver.
+Dirigir presenta exactamente cuatro preguntas distintas con título, motivo y
+variables. Prescribir escoge una de esas alternativas y explica la selección.
+La selección asistida o prescrita permite continuar sin registrar un acierto
+autónomo en BKT.
+
+Evaluación:
+El usuario envía una pregunta y un identificador de intento. La evaluación
+incluye consigna, rúbrica versionada, ayuda recibida, historial y contexto.
+La salida debe contener propósito, alcance, variables y viabilidad, cada uno
+con puntuación entera 0/1/2 y explicación; pregunta formulada, vista sugerida,
+variables utilizadas y feedback. El servidor deriva la finalización de que
+los cuatro criterios tengan 2, incluso si la etiqueta del modelo discrepa.
+
+Las columnas y vistas se validan. Esto evita referencias estructurales
+inexistentes, pero no demuestra que cualquier pregunta aceptada sea respondible
+ni que su significado coincida exactamente con la respuesta original.
+
+Sesiones y eventos:
+Se guarda contexto, revisión, tarea, motor, respuestas, apoyos y objetivo final.
+Los intentos repetidos recuperan la respuesta previa y no duplican BKT. En esta
+fase la reutilización de un ID con otra pregunta no tiene la misma comprobación
+de huella que la fase 2: devuelve el resultado anterior. Es una diferencia a
+documentar y revisar, aunque evita la doble actualización.
+
+La interfaz incluye un reloj interno de inactividad. La inactividad puede
+aumentar ayuda; en el motor actual no modifica conocimiento. Explorar gráficos
+o cambiar variables tampoco actualiza BKT.
+
+
+08. BKT Y POLÍTICA DE ASISTENCIA REALMENTE IMPLEMENTADOS
+============================================================
+
+MotorFase1 mantiene cuatro estados independientes: proposito, alcance, variables,
+viabilidad. MotorFase2 hereda el algoritmo y define coherencia, calidad, escalado,
+estructura. Compartir clase base no equivale a compartir estimaciones entre fases:
+Plan utiliza un motor propio con habilidades distintas.
+
+Parámetros por defecto del prototipo:
+P(L0)=0,50; slip=0,15; guess=0,25; aprendizaje=0,15.
+Umbral de retirada: 0,85. Evidencia mínima: dos tareas distintas.
+No están calibrados con participantes de esta investigación.
+
+Para una probabilidad previa p, slip s y guess g:
+Correcta: posterior = p*(1-s) / [p*(1-s)+(1-p)*g].
+Incorrecta: posterior = p*s / [p*s+(1-p)*(1-g)].
+Transición: p_nueva = posterior + (1-posterior)*aprendizaje.
+
+Con los valores iniciales, un acierto lleva aproximadamente a 0,8068 y un error
+a 0,2917 después de la transición. Son salidas del modelo, no mediciones directas
+del aprendizaje real. No hay un parámetro explícito de olvido en esta clase.
+
+Conversión de rúbrica:
+Puntuación 2 -> observación correcta; 0 o 1 -> incorrecta.
+Se conserva la rúbrica ordinal en otras estructuras, pero BKT pierde la diferencia
+entre cumplimiento parcial e incorrecto. El código exige las cuatro habilidades;
+no implementa en este motor un valor «no observada» para omitir un criterio.
+
+Reglas reales:
+- Inicio habitual en Autónomo.
+- Solicitar ayuda aumenta un grado hasta 4 sin cambiar probabilidades.
+- Solicitar prescripción permite saltar directamente al grado 4.
+- Una evaluación propia incompleta aumenta un grado.
+- La inactividad aumenta ayuda una vez por tarea y grado; no actualiza BKT.
+- Una observación correcta recibida en nivel 4 se omite en BKT.
+- Las observaciones incorrectas en nivel 4 sí se actualizan si pasan por registrar.
+- Una selección de opción asistida no pasa por el registro de acierto propio.
+- Completar una respuesta propia con los cuatro 2 permite contabilizar la tarea
+  como correcta por habilidad cuando el grado usado es menor que 4.
+- Si todas las habilidades están en o sobre 0,85 y cada una acredita al menos
+  dos tareas distintas, siguiente_nivel puede disminuir un grado.
+- Si no hay evidencia suficiente, conserva el apoyo para la siguiente tarea.
+- nueva_tarea(verificacion=True) inicia una comprobación autónoma explícita y
+  conserva la base de apoyo para la decisión posterior.
+
+Matiz importante: el motor usa el mismo slip/guess/aprendizaje en grados 1, 2 y 3
+para respuestas propias. No exige que las dos tareas correctas sean autónomas.
+La propuesta conservadora de acreditar fading únicamente con evidencia autónoma
+no está completamente implementada. Cambiar esa condición requiere una decisión
+de diseño explícita y su evaluación.
+
+El operador real del umbral es >=. Los textos que dicen solamente «superar 0,85»
+deben precisar si incluyen igualdad. El código sí la incluye.
+
+La retirada ocurre para otra tarea comparable, no quitando ayuda de inmediato
+solo por terminar una respuesta. En Plan se crea normalmente una tarea por sesión;
+su interfaz actual no demuestra por sí sola un currículo de tareas múltiples
+que ejercite toda la lógica heredada de fading.
+
+La política garantiza transiciones programadas, no que la ayuda elegida sea la
+mejor para aprender. Tampoco puede prometer que toda tarea se resolverá, porque
+pueden faltar datos, fallar el proveedor o persistir una dificultad conceptual.
+
+
+09. FASE 2: PLAN
+============================================================
+
+Objetivo: seleccionar y justificar una preparación coherente con la pregunta
+confirmada, sin modificar todavía el dataset. Archivos: fase2.py, motor_fase2.py,
+front/fase2.js, front/fase2.css y el módulo visual de calidad.
+
+La fase se inicia desde una sesión Problema completada. El servidor recupera
+el objetivo confirmado; no confía en uno reemplazado por el navegador. El
+diagnóstico usa la copia estable de Explorador y sus roles, y calcula faltantes,
+candidatos IQR, rangos y condiciones temporales/espaciales.
+
+Interacción:
+Se muestran columnas como botones de selección múltiple, muestra de cinco filas,
+ficha explicativa y decisiones pertinentes por variable. La nota libre puede ser
+opcional en la interfaz; el envío formal compone un texto con las decisiones
+estructuradas. La selección se guarda mediante /borrador con revisión, sin BKT.
+
+Acciones del catálogo:
+revisar faltantes, planificar imputación, usar registros completos, revisar o
+conservar candidatos atípicos, construir fecha, conservar unidades, evaluar
+escalado, revisar categorías, identificar registros y revisar coordenadas.
+No todas se ofrecen siempre: dependen del diagnóstico y del rol de columna.
+
+Rúbrica:
+Coherencia: relación de variables y decisiones con el objetivo.
+Calidad: atender faltantes/atípicos sin tratamientos indiscriminados.
+Escalado: decidir según el análisis, no por diferencia de rangos solamente.
+Estructura: organizar tiempo, categorías, identificadores y ubicación.
+Cada criterio recibe 0/1/2; completar exige cuatro puntuaciones 2.
+
+Si hay selección estructurada, Python construye el plan a partir de lo que
+eligió el estudiante. Así evita que la redacción del LLM añada tratamientos o
+columnas ajenos a esa selección. El evaluador sigue valorando la propuesta.
+El plan contiene pasos con acción, variables y justificación.
+
+Ayuda disponible:
+Autónomo: construir la estrategia.
+Orientar: pista; en el laboratorio actual puede ser local.
+Dirigir: el contrato de generación admite tres planes alternativos; el laboratorio
+visual utiliza también comparación y resaltado local sin llamar al LLM.
+Prescribir: la ruta vigente construye un plan determinista con prescribir_plan,
+selecciona variables del objetivo y preparación prudente, lo registra como
+prescrito y completado, y la interfaz avanza automáticamente a Datos.
+
+Esta última conducta contradice frases del README que dicen que el nivel 4 no
+cierra automáticamente y que la ejecución con Datos sigue pendiente. El código
+actual sí tiene ese enlace. La prescripción no imputa ni normaliza en Plan.
+
+El plan conserva origen usuario/sugerido/prescrito, objetivo y versión del dataset.
+ejecutado=False indica que confirmarlo no transforma datos. La fase Datos lleva
+su historial aparte; falta una representación unificada de trazabilidad del
+plan y su grado de ejecución a lo largo de todo el ciclo.
+
+Protecciones:
+Revisión de estado, bandera de ocupación, identificador de intento y huella de
+la propuesta. Repetir intento idéntico es idempotente; usar el ID con otro texto
+devuelve 409. Un error del proveedor o de esquema no aporta evidencia negativa.
+Los errores se distinguen por cuota, acceso, tiempo, conexión y formato.
+
+Sesiones en memoria: límite de 500 y depuración por inactividad de más de 24 h al
+crear sesiones. Reiniciar el servidor pierde progreso. No son una base persistente
+de aprendizaje. Los endpoints antiguos de evaluar estrategia devuelven 410.
+
+
+10. LABORATORIO VISUAL DE CALIDAD
+============================================================
+
+calidad_fase2.py calcula resúmenes; front/calidad-fase2.js los convierte en
+exploración y decisiones. No transforma valores ni necesita consultar al LLM
+para las pistas locales que presenta.
+
+Muestra disponibilidad y faltantes por periodo; curva de medias; candidatos a
+atípicos y valores habituales; referencias de media, Q1/Q3 y límites IQR; y
+vecinos de la misma estación cuando se inspecciona una observación.
+
+Se distinguen dos poblaciones para las referencias:
+- Curva temporal: estadísticas sobre medias de periodos con datos.
+- Dispersión: estadísticas sobre registros numéricos válidos.
+Un periodo extremo según medias no es idéntico a un registro extremo original.
+Q1 y Q3 delimitan la parte central; estar fuera de ellos no demuestra un error.
+
+El muestreo visual usa hasta 60 candidatos y 60 valores habituales, espaciados
+por filas. Los conteos diagnósticos se calculan sobre el conjunto válido, no solo
+sobre los puntos dibujados. La ventana de vecinos mantiene el orden del archivo
+y la misma estación; no debe describirse siempre como vecinos temporales ordenados.
+
+El apoyo visual cambia con el grado: explorar, recibir una pista, destacar un
+candidato/periodo y comparar, o adoptar una revisión propuesta. El grado procede
+del backend y queda asociado a las decisiones guardadas. El temporizador de
+inactividad está desactivado en el frontend de Plan: leer un gráfico no escala
+por sí mismo. El backend conserva la acción timeout como evento posible.
+
+
+11. FASE 3: DATOS
+============================================================
+
+Archivos actuales: fase3.py, front/fase3.js y front/fase3.css. La sesión se abre
+con una fase Plan confirmada. Se toman variables del plan, se identifican medidas
+y se copia el dataset original. Límite: 40 sesiones en memoria.
+
+Operaciones deterministas disponibles:
+conservar: no alterar la columna.
+excluir_nulos: eliminar filas con nulo en la variable seleccionada.
+media/mediana: completar nulos numéricos con el estadístico global de esa columna
+en los datos de trabajo actuales; no es imputación temporal o por estación.
+normalizar: min-max; en una columna constante los válidos pasan a cero y los
+nulos se conservan.
+limitar_iqr: recortar valores en los límites Q1-1,5*IQR y Q3+1,5*IQR.
+excluir_atipicos: excluir filas numéricas fuera de esos límites.
+
+Los límites y estadísticos dependen de los datos actuales después de operaciones
+previas. Por ello el orden de tratamientos puede cambiar resultados. Disponer de
+una operación no equivale a recomendarla para cualquier pregunta.
+
+Flujo reversible:
+1. Comparar escenarios sin alterar la sesión.
+2. Previsualizar una operación y ver cambios/ejemplos.
+3. Aplicar explícitamente la previsualización.
+4. Registrar variable, acción, cantidad de cambios y apoyo recibido.
+5. Deshacer usando hasta diez copias anteriores.
+6. Descargar datos_preparados.csv con las columnas del conjunto de trabajo.
+El archivo CSV original no se sobrescribe en estas rutas.
+
+Hay comparación conjunta de escalas para medidas y normalización de varias
+columnas en una previsualización. Se conservan parámetros min/max por variable.
+Los datos de contexto, como station y componentes temporales, se mantienen en
+la copia y en la descarga, aunque la interfaz se enfoque en variables del plan.
+
+Visualizaciones de efectos:
+- Media por periodo antes/después y cantidades observadas.
+- Dispersión y cajas con candidatos IQR.
+- Ventana de registros de la misma estación para ubicar nulos y cambios.
+- KDE original, tras imputación con media y tras imputación con mediana.
+
+La KDE usa rejilla y ancho de banda comunes para comparar escenarios. Rechaza
+curvas inventadas cuando hay pocos valores o datos constantes. La ventana de
+fase 3 ordena por fecha cuando está disponible, a diferencia de la ventana
+de vecinos de fase 2, que utiliza orden del archivo.
+
+Observación estadística importante del trabajo realizado:
+Excluir filas con nulo en una medida no cambia necesariamente su media entre
+los valores observados: los nulos ya eran ignorados. Sí cambia el número de
+registros y puede cambiar cobertura u otras variables. Imputar con media global
+puede cambiar medias mensuales y reducir dispersión aunque preserve cierta
+media global. Esto motivó mostrar conteos y ventanas, además de curvas.
+
+Ayuda pedagógica actual:
+Grado local de 1 a 4 con botones de ayuda o salto a prescribir y textos de la
+interfaz. No se encontró un MotorFase3 BKT ni una rúbrica LLM equivalente integrada
+en registrar_fase3. No se debe afirmar adaptación pedagógica homogénea de las
+tres fases: aquí el grado cambia por acciones explícitas y no estima dominio.
+
+La API valida variables del plan para previsualizar, pero no interpreta todo el
+texto del plan como restricciones ejecutables de métodos. Tampoco garantiza
+que la operación aplicada coincida semánticamente con la estrategia original.
+El cierre pedagógico y paso a Análisis están pendientes de una implementación
+completa. Descargar datos preparados no equivale a completar el ciclo PPDAC.
+
+
+12. PLANIFICADOR EXPERIMENTAL lightVA.py
+============================================================
+
+Es un programa de terminal independiente inspirado en las ideas de LightVA.
+No es el código original del paper, una reproducción validada ni un ejecutor de
+agentes. Tampoco sustituye automáticamente el Plan de la aplicación web.
+
+Entrada: pregunta ya formulada en Problema, perfil calculado del CSV y, si se
+solicita revisión, propuesta anterior e indicación del usuario.
+Salida: interpretación estructurada y tareas/subtareas para 2 Plan, 3 Datos,
+4 Análisis y 5 Conclusiones. No vuelve a crear Problema.
+
+Interpretación:
+objetivo, intención, variables, explícito, inferido, pendiente, viable y límites.
+Separar lo explícito de lo inferido evita completar silenciosamente periodos,
+estaciones o métodos que el usuario no indicó. Una representación estructurada
+de la pregunta puede llamarse especificación de tarea o metadatos de intención;
+es distinta de los metadatos del dataset.
+
+Contenido de las subtareas:
+descripción, variables, método previsto, resultado esperado, criterio de
+verificación y condición. Se añadieron propósito de aprendizaje, evidencia
+evaluable, criterios de evaluación y los textos autónomo/orientar/dirigir/
+prescribir. Son candidatos de intervención, no un grado seleccionado.
+
+Modalidades:
+Rápido, predeterminado: dos llamadas nominales, interpretación y actividades
+para las cuatro fases. Python agrupa actividades, ordena fases y asigna IDs.
+Secuencial: cinco llamadas nominales, interpretación y una por fase.
+Los reintentos/reparaciones pueden aumentar estas cantidades; no son garantías
+de latencia ni de consumo. El modo rápido no dispara automáticamente una cadena
+por fases si falla, para evitar multiplicar coste.
+
+Los IDs F2T1, F2T1S1, etc. y dependencias se construyen en Python. Esto resolvió
+referencias inexistentes, futuras o circulares generadas por el modelo. La
+secuencia resultante es una organización determinista simplificada; no demuestra
+que se haya inferido un grafo de dependencias metodológicas óptimo.
+
+Validación y robustez:
+- Esquemas JSON estrictos con objetos cerrados y columnas enumeradas.
+- Comprobación local de fases, campos, textos, variables y pedagogía.
+- Detección de respuestas truncadas.
+- Caché en memoria de hasta 32 respuestas válidas, aislando mutaciones.
+- Conservación de respuesta recibida para retomar validación/reparación.
+- Recuperación del trabajo previo al repetir una pregunta tras cuota.
+- Reintentos acotados ante ciertos 429 por tokens por minuto.
+- No reintentar indefinidamente cuota diaria, petición superior al límite o
+  esperas largas; presupuesto de espera total de 45 segundos en esa lógica.
+- Ante JSON inválido, una regeneración acotada.
+- Duplicados idénticos en un campo compatible se colapsan; textos conflictivos
+  se reparan puntualmente en vez de regenerar todo el plan.
+- Medición de duración y tokens cuando el proveedor informa uso.
+
+La configuración puede usar LIGHTVA_MODEL y credenciales GROQ_API_KEY u
+OPENAI_API_KEY. El cliente web principal no tiene exactamente esa misma lectura.
+
+Comandos: /revisar <indicación>, /guardar <ruta.json>, /salir. Tiene opciones de
+línea de comandos para pregunta, perfil y modo secuencial.
+
+Límites semánticos detectados en ejecuciones históricas:
+Se propusieron media/mediana o correlaciones sin diagnóstico suficiente; se
+omitió wd aunque aparecía en el objetivo; se confundieron coeficientes con
+p-values; se pedían comparaciones de sensibilidad sin generar escenarios en
+fases anteriores; y apareció un umbral arbitrario de cambio de correlación 0,1.
+También surgieron pistas de programación donde la tarea era comprender datos.
+Esos errores motivaron mejorar contratos y criterios, pero los tests de formato
+no demuestran que todos estén resueltos en futuras salidas reales.
+
+Los chats registran pruebas reales puntuales con pocos segundos y dos llamadas,
+así como un caso 429 con JSON duplicado. Son observaciones históricas de casos
+concretos; no constituyen un benchmark de rendimiento. En esta revisión no se
+consumió cuota ni se enviaron nuevas preguntas al proveedor.
+
+
+13. TAREAS, SUBTAREAS E INTERVENCIÓN PEDAGÓGICA
+============================================================
+
+Jerarquía acordada: PPDAC -> fase -> tarea -> subtarea -> método y evidencia.
+La estructura general se mantiene; el contenido cambia con objetivo y datos.
+Describir una media anual, comparar distribución y predecir mañana no requieren
+el mismo plan, aunque compartan diagnóstico inicial.
+
+Para convertir una subtarea técnica en una actividad adaptable hay que definir:
+qué debe comprender el estudiante, qué hará, qué producto construirá, qué
+evidencia propia se observará, qué criterios se aplican y qué ayudas candidatas
+pueden ofrecerse ante dificultades observables.
+
+Ejemplo discutido: «Definir episodios elevados de PM2.5».
+En Plan se decide un criterio, periodo de referencia y justificación. No se debe
+exigir calcular P90 en esa fase ni inventar un resultado como 120. Si se elige
+un percentil, su cálculo se programa en la fase correspondiente y se aclara que
+define elevación relativa, no un límite sanitario. La aplicación requiere definir
+también la comparación y el manejo de empates.
+
+Para «planificar tratamiento de faltantes»:
+Autónomo: proponer una estrategia y los datos necesarios para decidir.
+Orientar: señalar concentración temporal y posible pérdida de comparabilidad.
+Dirigir: comparar estrategias pertinentes y sus consecuencias.
+Prescribir: ofrecer una propuesta condicionada al diagnóstico y explicar límites.
+Nueva evidencia: verificar después si el estudiante puede decidir en otra tarea
+con menos apoyo. Adoptar la propuesta no equivale a demostrar dominio.
+
+La petición de la asesora sobre una tarea de preprocesamiento se interpretó como
+construir un caso completo: contexto, dificultad, intervención, respuesta,
+evaluación, preparación, impacto analítico y conclusión. No consta una elección
+final inequívoca de una sola tarea. Se trabajó tanto con faltantes como atípicos.
+Conviene cerrar esa elección antes de multiplicar métodos.
+
+
+14. PAPERS ESTUDIADOS Y RELACIÓN CON SiGAD
+============================================================
+
+Los siguientes aportes sintetizan el estudio registrado en los guiones, textos
+locales y chats. No son una nueva auditoría bibliográfica completa de cada paper.
+
+GUIAVisWeb: Guidance for Interactive Visual Analysis in Multivariate Time Series
+Preprocessing. Antecedente cercano para tareas/subtareas de preprocesamiento,
+recomendaciones, grados de guidance y explicaciones visuales/textuales.
+Se usó como referencia para discutir instrumentos de calidad del guiado.
+Ya tiene organización de tareas: no atribuir a SiGAD esa idea como exclusiva.
+La comparación con cifras publicadas es referencial si no se replican condiciones.
+Referencia conservada: DOI 10.3390/s25185617.
+
+Kazemitabaar y colaboradores: Improving Steering and Verification in AI-Assisted
+Data Analysis with Interactive Task Decomposition. Aporta descomposición visible
+del trabajo y oportunidades de revisión para orientar/verificar el análisis.
+Ayuda a diseñar puntos de intervención, sin determinar por sí mismo la política
+pedagógica de SiGAD. Material local: 2407.02651v2.txt.
+
+LightVA: Lightweight Visual Analytics with LLM Agent-Based Task Planning and
+Execution. Aporta planificación desde objetivos, contexto del dataset e historial,
+descomposición y ejecución en su arquitectura original. SiGAD toma la planificación
+como inspiración, la alinea a PPDAC y agrega tareas con evidencia pedagógica.
+El código local no reproduce la ejecución del sistema original. Material local:
+2411.05651v2.txt. No convertir la búsqueda histórica sin repositorio verificable
+en la afirmación permanente de que hoy no existe código público.
+
+WaitGPT: Monitoring and Steering Conversational LLM Agent in Data Analysis with
+On-the-Fly Code Visualization. Aporta hacer visibles operaciones y sus efectos
+para supervisar y corregir. En SiGAD inspira transparencia visual, pero no obliga
+a enseñar programación al usuario novato. Material local: 2408.01703v1.txt.
+
+Gu y colaboradores: How Do Analysts Understand and Verify AI-Assisted Data
+Analyses? Aporta comprender qué hizo la IA y contrastarlo con datos y resultados.
+Orienta qué evidencia debería ver el usuario y cómo apoyar verificación.
+Material local: 2309.10947v2.txt.
+
+Otros antecedentes presentes en el artículo: GuidedStats, VIZTA, guías LLM para
+interpretación de gráficos, LEVA, perfilado semántico, TimeLighting, EduClust,
+Spam Four Ways, simulaciones de incertidumbre y actividades de alfabetización
+visual. El manuscrito los usa para situar apoyos específicos y límites de alcance.
+Sus resultados y cifras necesitan conservar trazabilidad a las fuentes originales
+antes de cerrar una versión publicable.
+
+No hay un único paper que fundamente todo: planificación, interacción, verificación,
+pedagogía y modelado del aprendiz cumplen funciones distintas. La pertinencia de
+un antecedente depende de la tarea concreta que se quiere diseñar y evaluar.
+
+Se elaboraron una exposición extensa de cuatro papers, versiones de ocho
+diapositivas y una ampliada, más guiones. Estos artefactos son material de
+preparación académica; no evidencian evaluación de SiGAD con usuarios.
+
+
+15. ANÁLISIS DEL PAPER Y DE SUS VERSIONES
+============================================================
+
+Artículo más desarrollado localizado:
+/Users/xawii/Downloads/Articulo_Proyecto_Final-4 (1).pdf, nueve páginas.
+Presenta título, introducción, trabajos relacionados, propuesta, metodología,
+implementación de Problema, figuras y bibliografía. Conserva Abstract y palabras
+clave de plantilla, además del encabezado «Journal of LaTeX Class Files ... 2015».
+No contiene resultados experimentales propios de aprendizaje.
+
+LaTeX dentro de Tesis-2026:
+Claude outputs/sigad_paper.tex contiene título, resumen, introducción y referencias,
+con nota explícita de que otras secciones se agregarán después. Es un borrador
+distinto y más corto, no la fuente completa del PDF de nueve páginas. Incluye
+referencias todavía pendientes y PI1-PI4, que no coinciden con la preferencia
+posterior del usuario de organizar su trabajo por problema y objetivos.
+
+También existe una fuente bare_jrnl.tex en Downloads/Articulo_Proyecto_Final y un
+texto LaTeX adjunto a un chat. No debe asumirse que cualquiera sea la versión
+vigente de Overleaf o que coincida exactamente con el PDF solo por el nombre.
+
+Qué está bien encaminado en el artículo:
+- Parte de alfabetización en datos y dificultades metodológicas de novatos.
+- Explica que decisiones de preparación afectan análisis y conclusiones.
+- Separa decisión del grado y redacción del contenido.
+- Introduce andamiaje y dominio probabilístico.
+- Muestra materialización concreta de los cuatro grados en Problema.
+- Distingue completar con asistencia de demostrar dominio independiente.
+
+Correcciones necesarias:
+1. Delimitar arquitectura completa frente a prototipo y evaluación real.
+2. Actualizar la implementación: Plan y Datos ya tienen código que el PDF no
+   describe; aun así, no tienen todos los mismos mecanismos pedagógicos.
+3. Evitar duplicar ecuaciones BKT en Propuesta y Metodología.
+4. Aclarar el momento de actualización: ocurre tras una evaluación válida y antes
+   de la decisión resultante, no solo al terminar la fase.
+5. Corregir el tratamiento de omisiones: el código vigente no penaliza BKT por
+   inactividad, mientras el PDF todavía habla de evidencia atenuada.
+6. Corregir que cuatro puntuaciones máximas no significan necesariamente
+   «finalización autónoma»: también puede haber respuesta propia con ayuda.
+7. Reconocer que validar columnas y JSON no garantiza viabilidad semántica.
+8. Describir siete vistas actuales frente a las cinco iniciales.
+9. No afirmar transferencia adaptativa entre todas las fases si Plan inicia
+   habilidades independientes y Datos carece de BKT integrado.
+10. Explicar la política para observaciones asistidas: niveles 1-3 usan hoy los
+    mismos parámetros, en contra de una interpretación estrictamente autónoma.
+11. Reemplazar resultados prometidos por diseño de evaluación cuando aún no
+    existe experimento; no redactar «mejora» como hallazgo propio.
+12. Revisar afirmaciones universales sobre ausencia de pedagogía o cobertura en
+    otros sistemas; requieren una revisión sistemática suficiente.
+13. Completar resumen, palabras clave, referencias, encabezados y consistencia
+    terminológica. Separar el año de publicación final y el de preprint cuando
+    difieran, sin mezclarlos entre versiones.
+
+El paper necesita una versión fuente canónica y una matriz de correspondencia
+entre afirmaciones, funciones del código y evidencia de evaluación. Actualmente
+hay varias narrativas coexistiendo y algunas corresponden a etapas anteriores.
+
+
+16. RECOMENDACIONES DE LA ASESORA
+============================================================
+
+Documento revisado: revision tesis.pdf, ocho páginas. Su recomendación central
+es presentar un mecanismo comprensible y verificable, evitando una enumeración
+de tecnologías desconectadas.
+
+Estructura sugerida para Propuesta:
+III-A. Visión general y alcance.
+III-B. Fundamento pedagógico de la adaptación.
+III-C. Arquitectura funcional.
+III-D. Modelo del usuario y estimación del dominio.
+III-E. Política de adaptación pedagógica.
+III-F. Guidance contextual explicativo.
+III-G. Ciclo de interacción y actualización.
+
+En Propuesta se explica qué es el mecanismo y cómo se concibe. En Metodología
+se detallan habilidades/rúbricas, ecuaciones, parámetros, algoritmo, implementación,
+datos y evaluación. Las ecuaciones se desarrollan una vez.
+
+La arquitectura debe distinguir fundamento pedagógico, flujo de información y
+flujo de intervención. El contexto es transversal. Una figura conceptual con
+flechas entre conceptos no debe confundirse con el orden exacto de ejecución.
+
+Prioridades recuperadas de revisión y chats:
+- Formalizar las cuatro habilidades y justificar su relación con BKT.
+- Determinar qué evidencia cuenta, incluida ayuda y respuestas prescritas.
+- Especificar cuándo aumentar, mantener y reducir la ayuda.
+- Tratar 0,85 y dos tareas como decisiones del prototipo, no leyes pedagógicas.
+- Preparar casos controlados con resultados esperados definidos antes del test.
+- Mostrar una tarea concreta de preprocesamiento a lo largo del proceso.
+- Estudiar los cuatro papers sobre LLM y revisar material de ciencia de datos.
+- Explicar motivación, problema, objetivo, modelo, módulos, benchmark, línea base,
+  evaluación, conclusiones y trabajo futuro en la exposición.
+
+La recomendación del PDF de delimitarse a Problema corresponde al estado que
+examinó. Se debe actualizar el alcance con la asesora a partir del prototipo
+actual, sin asumir que la expansión de código ya fue aprobada como alcance final.
+
+
+17. OBJETIVOS DE EVALUACIÓN, PROCEDIMIENTOS Y MÉTRICAS
+============================================================
+
+Se discutieron varias alternativas. No hay evidencia de un protocolo final
+ejecutado ni de una muestra de participantes ya evaluada. Conviene distinguir:
+
+A. Calidad percibida del guidance.
+La propuesta más reciente recuperada selecciona flexibilidad, adaptabilidad,
+oportunidad y pertinencia, tomando como referencia ítems de GUIAVisWeb. Antes se
+hablaba de explicabilidad en la misma lista; después se advirtió que los
+instrumentos y escalas deben distinguirse.
+Procedimiento propuesto: aplicar ítems pertinentes tras tareas y documentar
+adaptación/traducción; resumir por criterio con dispersión.
+Métricas: puntaje medio por dimensión e incertidumbre; diferencia respecto a
+valores publicados solo cuando sea interpretable.
+Los chats identifican calidad del guiado en escala 1-7 y otro instrumento de
+explicabilidad 1-6. No mezclar denominadores. Verificar ítems y correspondencia
+en la fuente original antes del protocolo definitivo.
+Comparar con medias publicadas de otra población no demuestra superioridad causal.
+
+B. Efecto sobre alfabetización y autonomía.
+Pretest/postest, grupo con SiGAD y grupo de comparación, actividades y tiempos
+equivalentes y control del nivel inicial.
+Métricas propuestas: puntajes, ganancia post-pre, diferencia ajustada entre
+grupos y tamaño del efecto con intervalo de confianza.
+Usar tareas nuevas y desempeño con menor asistencia para medir transferencia.
+Completar una tarea prescrita, sentirse satisfecho o tener BKT alto no sustituye
+una medida independiente del aprendizaje.
+
+C. Consistencia del LLM.
+Repetir contextos idénticos fijando dataset, tarea, historial, ayuda, modelo,
+prompt y configuración. Separar consistencia del evaluador de la del generador.
+Métricas: frecuencia de salida modal por campo, acuerdo por pares y número de
+alternativas distintas. Se normalizan equivalencias definidas previamente.
+No comparar literalmente textos libres si lo importante es método/variables/
+acción. Consistencia no es corrección y puede haber varias soluciones válidas.
+
+D. Calidad predictiva de BKT, discutida como objetivo alternativo/complementario.
+Comparar probabilidad de acierto futuro con respuestas observadas y una base
+estática por habilidad usando RMSE y AUC cuando corresponda.
+La predicción de acierto sería p*(1-slip)+(1-p)*guess, no simplemente p.
+Separar datos de ajuste y prueba, respetando orden temporal y participantes.
+Un mejor predictor no prueba automáticamente mayor aprendizaje.
+
+E. Adecuación de la política, también discutida.
+Comparar decisiones de aumentar/mantener/reducir con referencia experta definida
+sin consultar la salida del motor. Métricas: concordancia, matriz de confusión y
+F1 por decisión. Comparar solo con sus propias reglas mide conformidad de código;
+una referencia independiente permite estudiar adecuación de decisiones.
+
+F. Validación técnica controlada.
+Intentos duplicados, fallo de evaluación, ayuda, inactividad, acierto prescrito,
+reintentos sobre una tarea, borde del umbral, una habilidad rezagada, columnas
+inexistentes y cambios de fase. Métricas: cumplimiento de reglas, cobertura de
+casos, actualizaciones duplicadas y referencias inválidas.
+Estas comprobaciones complementan, no reemplazan, las evaluaciones anteriores.
+
+Hace falta elegir un conjunto manejable de objetivos, especificar instrumentos,
+tamaño/diseño de muestra, tareas comparables, análisis y criterios de éxito.
+Este informe conserva las alternativas sin fingir que todas quedaron aprobadas.
+
+
+18. INVENTARIO EXPLICADO DEL CÓDIGO Y LAS INTERFACES
+============================================================
+
+app.py: entrada Flask, carga de datos, callbacks LLM, registro de fases, archivos
+web, CORS y endpoints diagnósticos/heredados.
+agente.py: cliente Groq compatible con OpenAI; evaluaciones y generación; también
+conserva métodos anteriores que consultan endpoints HTTP locales.
+prompts.py: instrucciones y construcción de entradas para evaluaciones, apoyos,
+alternativas y diagnósticos; contiene material de distintas generaciones.
+fase1.py: perfilado, roles, vistas, contexto, validación y ciclo de Problema.
+motor_fase1.py: estados por habilidad, actualización BKT y reglas de asistencia.
+fase2.py: diagnóstico, catálogo de acciones, borrador, evaluación, ayuda,
+prescripción y plan confirmado, con sesiones/revisiones.
+motor_fase2.py: rúbrica de Plan y especialización de MotorFase1.
+calidad_fase2.py: referencias, disponibilidad, candidatos y vecinos.
+fase3.py: preparación reversible, gráficos antes/después, KDE y descarga.
+lightVA.py: experimento de planificación de tareas y apoyos por terminal.
+
+Frontend:
+index.html y styles.css: estructura y estilo compartidos.
+app.js: navegación entre las tres fases, API base, estado visual e historial.
+fase1.js/css: exploración, formulación, niveles y gráficos de Problema.
+fase2.js/css: selección, decisiones, borrador, evaluación y transición.
+calidad-fase2.js: laboratorio visual que amplía el controlador de Plan.
+fase3.js/css: selección de tratamientos, comparación, ayudas locales, previsualizar,
+aplicar, deshacer y descarga.
+sessionStorage conserva referencias de objetivo/plan; localStorage conserva un
+historial visible. Eso no hace persistentes las sesiones reales del backend.
+
+Scripts y materiales anteriores:
+Categorizacion_Data.py: lectura y exploración básica con ruta antigua.
+dataUnderstanding.py: tutor conversacional sobre info/describe; lectura y bucle
+en el nivel superior, por lo que importarlo puede ejecutar trabajo no deseado.
+groq.py: experimento de proveedor independiente del cliente principal.
+main.py: prueba de análisis batch de normalización mediante MotorAnalisis.
+main_fase3.py: ejemplo de análisis de candidatos atípicos y recomendación LLM;
+requiere API local disponible.
+prueba.py: genera Sweetviz; sweetviz no figura en requirements.txt actual.
+Readme2.md: vacío en la revisión.
+estado_fase1.json/estado_fase2.json: evidencia de sesiones anteriores, no almacén
+vigente de sesiones del nuevo backend.
+reporte.html y reporte_sweetviz.html: reportes exploratorios ya generados, no
+una evaluación experimental del sistema.
+
+Material de diseño:
+Claude outputs/motor_adaptativo*.py: variantes conceptuales no importadas por la
+ruta principal. fundamentacion_metodo_tesis.md mezcla justificación histórica
+y reglas anteriores. sigad_paper.tex es borrador parcial.
+propuesta_sigad_revisada.md: distingue implementación y recomendaciones; también
+conserva descripciones del motor anteriores a cambios posteriores.
+diagramas/ppdac_arbol.dot: árbol conceptual con Análisis/Conclusiones propuestos.
+figuras/ y los SVG/PNG de Claude outputs/: versiones visuales de arquitectura.
+output/pdf/: informe previo de avance de Problema.
+output/exposicion_papers/entrega/: presentaciones y guiones.
+tmp/pdfs/generar_informe_avance.py: generador del informe anterior; usa rutas a
+figuras de Downloads y requiere dependencias adicionales a las de la aplicación.
+output/exposicion_papers/build/: textos de papers, scripts de construcción,
+renders y validaciones de presentación; no confundir con módulos del producto.
+
+API por familias:
+/api/fase1: perfil, gráfico, sesión/estado, acciones, apoyo, opciones/selección y
+evaluación. Cabecera de sesión X-SiGAD-Session.
+/api/fase2: sesión/estado, muestra, calidad, borrador, evaluar, acción, apoyo y
+seleccionar. Cabecera X-SiGAD-Phase2.
+/api/fase3: sesión, operación y descargar. Cabecera X-SiGAD-Phase3.
+Existen además endpoints anteriores en app.py para identidad/taxonomía,
+diagnóstico, nulos, atípicos, normalización y transformación temporal.
+El anexo automático enumera los decoradores exactos para no depender de este
+resumen conceptual.
+
+
+19. PRUEBAS Y EVIDENCIA TÉCNICA ACTUAL
+============================================================
+
+Durante esta revisión se ejecutó, sin consultar al proveedor:
+PYTHONDONTWRITEBYTECODE=1 .conda-env/bin/python -m unittest discover -s tests -q
+Resultado observado: 143 pruebas, OK, 1,150 segundos según unittest.
+
+Las trazas de fallos de proveedor y advertencias de cuota/formato durante esa
+ejecución forman parte de casos simulados que comprueban manejo de errores;
+no significaron fallos finales de la suite ni nuevas llamadas reales a Groq.
+
+Archivos:
+tests/test_fase1.py: motor, perfil, vistas, contexto, sesiones, alternativas,
+prescripciones y errores de evaluación, entre otros escenarios.
+tests/test_fase2.py: diagnóstico, borrador, continuidad de objetivo, evaluación,
+ayuda, prescripción, idempotencia y protección de estado.
+tests/test_calidad_fase2.py: resúmenes, referencias, candidatos y ventanas.
+tests/test_fase3.py: transformación, simulaciones independientes, aplicar/deshacer,
+preservación del original, descarga y gráficos/efectos de preparación.
+tests/test_lightva.py: contratos de planificación, campos pedagógicos, JSON,
+esquemas, dependencias, reintentos, cuotas, caché y reparación puntual.
+
+Alcance de esta evidencia:
+Demuestra que los escenarios automatizados existentes pasan con el estado
+actual y el entorno local utilizado. No prueba todas las combinaciones, calidad
+de futuras respuestas reales, diseño visual en todos los navegadores, validez
+de las rúbricas, calibración BKT ni impacto educativo.
+
+No se lanzó una nueva sesión web completa con proveedor ni se hizo un estudio
+con personas durante este informe. Tampoco se modificó el código para mejorar
+resultados: el trabajo pedido aquí fue analizar y documentar.
+
+
+20. DISCREPANCIAS, RIESGOS Y LÍMITES
+============================================================
+
+Prioridad científica:
+1. El alcance conceptual es mayor que la implementación y la evaluación.
+2. No hay evidencia experimental propia de que mejore alfabetización/autonomía.
+3. Rúbricas y parámetros BKT no están validados/calibrados.
+4. Los criterios no observables se puntúan en un modelo que espera todos los
+   campos; falta política explícita para «no observado».
+5. El evaluador LLM introduce variación e interpretaciones que afectan BKT.
+6. La evidencia asistida 1-3 no se diferencia en parámetros como se discutió.
+7. Fading requiere tareas distintas comparables, todavía no un currículo completo.
+8. Datos no comparte el mecanismo pedagógico de las dos primeras fases.
+
+Documentación:
+9. README, PDF, variantes de motor y código presentan reglas incompatibles de
+   inactividad, prescripción y avance. Hace falta elegir fuente vigente.
+10. La sección de implementación del PDF se centra en una etapa antigua.
+11. Referencias/cifras de antecedentes necesitan trazabilidad y completar campos.
+12. Distintos listados de objetivos deben cerrarse con la asesora.
+
+Implementación y reproducción:
+13. Sesiones en RAM se pierden al reiniciar; no hay repositorio duradero unificado
+    de trazas para análisis longitudinal.
+14. El historial visible del navegador no sustituye el registro científico.
+15. Una parte importante del proyecto está modificada o sin seguimiento en Git;
+    los tres commits no bastan para reconstruir el estado actual.
+16. Se rastrean o acumulan cachés __pycache__; dificultan un historial limpio.
+17. requirements.txt tiene intervalos de versiones, no un entorno bloqueado.
+    Sweetviz y herramientas de informes no están incluidas.
+18. Conviven dos entornos locales y scripts con rutas antiguas. En esta revisión
+    funcionó el Python de .conda-env; no se debe asumir que .venv siga vigente.
+19. Hay rutas nuevas junto con endpoints heredados con otro modelo de estado.
+    Por ejemplo, transformar-tiempo en app.py modifica el df global en memoria;
+    la nueva fase Datos trabaja en copia. No describir ambos como idénticos.
+20. La preparación media/mediana es global por columna y la normalización min-max;
+    no son un catálogo completo de métodos ni consideran automáticamente las
+    dependencias temporales, por grupo o de entrenamiento/prueba.
+21. La prescripción de Plan se deriva de variables/vista confirmadas, no de una
+    comprensión exhaustiva de toda intención posible de la pregunta.
+22. La validación de variables del plan no impone todos sus métodos como reglas.
+
+Contexto de uso local:
+El servidor permite CORS '*', usa tokens de sesión en cabeceras y no presenta un
+sistema completo de cuentas/roles persistentes. Es adecuado describirlo como
+prototipo local. Antes de una evaluación multiusuario o publicación habría que
+revisar aislamiento, autorización, capacidad, retención y manejo de errores.
+Las credenciales no se incorporaron al informe ni se leyó el contenido de .env.
+
+
+21. CASO COMPLETO PARA ENTENDER EL PROYECTO
+============================================================
+
+Ejemplo ilustrativo, no resultado experimental generado en esta revisión:
+«¿Cómo varía la concentración mensual de PM2.5 durante 2015 y cuánto cambia esa
+descripción según una decisión justificada sobre los valores faltantes?»
+
+Problema:
+El estudiante explora PM2.5 y cobertura temporal, delimita 2015 y formula la
+pregunta. Se evalúan propósito, alcance, variables y viabilidad. Si necesita
+ayuda, la política selecciona grado y el sistema presenta la intervención.
+
+Plan:
+Selecciona PM2.5 y tiempo. Revisa disponibilidad por periodo; decide qué comparar
+y cómo justificarlo. Puede conservar observados y preparar un escenario de
+tratamiento si es pertinente. No declara que completar todo sea necesariamente
+mejor ni produce todavía cifras finales. La evaluación corresponde al plan.
+
+Datos:
+Inspecciona nulos, vecinos y distribución. Compara conservar, excluir o imputar
+con métodos disponibles, observa cómo cambian conteos/medias/dispersión y aplica
+solo después de previsualizar. Puede deshacer. Esta parte tiene implementación.
+
+Análisis, todavía por completar como fase web:
+Calcula resultados para el periodo y escenarios definidos, usa agregación y
+cobertura comparables, y documenta diferencias. El planificador puede describir
+estas tareas, pero describirlas no es ejecutarlas en el prototipo.
+
+Conclusión, todavía por completar como fase web:
+Responde con los resultados reales, reconoce datos ausentes y sensibilidad a
+decisiones de preparación. No atribuye causalidad ni generaliza a otras estaciones.
+
+Comprobación pedagógica pendiente:
+Una tarea nueva permite observar si el estudiante interpreta calidad y elige
+estrategia con menos ayuda. Solo entonces se obtiene evidencia de autonomía.
+Este recorrido conecta el preprocesamiento con el valor educativo del sistema.
+
+
+22. PENDIENTES ORDENADOS Y PRÓXIMOS ENTREGABLES
+============================================================
+
+Primero: cerrar una especificación coherente.
+- Elegir fuente canónica del paper y alcance final con la asesora.
+- Definir población, competencias y tarea demostrativa de faltantes o atípicos.
+- Construir tabla de habilidades, evidencia, aplicabilidad y ayuda admitida.
+- Escribir política de asistencia con precedencia de eventos y reglas de fading.
+- Alinear texto, README, figuras y código; conservar lo histórico como histórico.
+Entregable: especificación corta y matriz afirmación -> implementación -> evidencia.
+
+Segundo: completar un recorrido verificable de la tarea seleccionada.
+- Hacer corresponder Plan, preparación ejecutada, análisis y conclusión.
+- Definir restricciones ejecutables y registro de cambios respecto al plan.
+- Incorporar las fases restantes dentro del alcance acordado, o delimitar el
+  artículo a un caso completo más pequeño que se pueda evaluar bien.
+- Diseñar evidencia en Datos y decidir si integra BKT y con qué habilidades.
+Entregable: caso reproducible con dataset, entradas, decisiones y salidas esperadas.
+
+Tercero: separar comprobación técnica y calidad de contenido.
+- Mantener los tests que ya pasan y añadir solo casos necesarios por cambios.
+- Revisar contenido real con referencia experta y condiciones fijas.
+- Medir consistencia del evaluador y pertinencia de las ayudas por separado.
+- Verificar diferencias entre respuestas autónomas, orientadas y prescritas.
+Entregable: corpus pequeño de casos, rúbricas y resultados auditables.
+
+Cuarto: preparar evaluación de aprendizaje.
+- Instrumento y tareas nuevas alineadas a las habilidades.
+- Grupo de comparación y control del nivel inicial.
+- Procedimiento para retirar/medir asistencia sin confundir ayuda con dominio.
+- Plan de análisis y registro persistente, con versiones del modelo/prompt/política.
+Entregable: protocolo piloto y luego experimento dentro del alcance real.
+
+Quinto: preparar entrega académica reproducible.
+- Consolidar fuentes bibliográficas y corregir plantilla IEEE.
+- Actualizar exposición, figuras y capturas con el estado evaluado.
+- Versionar el código necesario y dependencias; excluir secretos y cachés.
+- Exportar datos/trazas anonimizadas y resultados cuando existan.
+Entregable: paper coherente con un prototipo y una evaluación reproducibles.
+
+
+23. EJECUCIÓN Y REPRODUCCIÓN
+============================================================
+
+Desde la raíz Tesis-2026:
+conda activate ./.conda-env
+python app.py
+Abrir http://127.0.0.1:5000
+
+Alternativa sin activar Conda, verificada para ejecutar las pruebas:
+./.conda-env/bin/python app.py
+
+Pruebas:
+PYTHONDONTWRITEBYTECODE=1 ./.conda-env/bin/python -m unittest discover -s tests -q
+
+Planificador:
+python lightVA.py
+python lightVA.py --perfil
+python lightVA.py --pregunta "¿Cuál fue la concentración promedio de PM2.5 durante 2015?"
+python lightVA.py --modo secuencial --pregunta "¿Cómo varía PM2.5 durante 2015?"
+
+Dataset alternativo: variable SIGAD_CSV_PATH, ruta absoluta o relativa al proyecto.
+La exploración local no necesita una llamada LLM; la evaluación/generación sí
+requiere configuración válida del proveedor. No guardar claves en documentos.
+
+requirements.txt actual: Flask 3.x, Pandas 2.x, NumPy desde 1.26 y menor que 3,
+Requests desde 2.31 y menor que 3, OpenAI desde 1 y menor que 4, python-dotenv
+desde 1 y menor que 2. Los rangos permiten cambios entre instalaciones.
+
+Antes de interpretar resultados, registrar versión del código/dataset, entorno,
+parámetros BKT, modelo, prompt, temperatura, criterios y condiciones de ayuda.
+Una semilla o temperatura cero no garantizan identidad de salidas del proveedor.
+
+
+24. GLOSARIO Y EXPLICACIÓN BREVE DEL PROYECTO
+============================================================
+
+Contextual: pertinente a datos, tarea, fase, visualización y respuesta actual.
+Adaptativo: cambia el apoyo según evidencia y reglas, no solo por texto distinto.
+Explicativo: comunica razones y condiciones metodológicas comprensibles.
+Evidencia: acción/respuesta observable con contexto y ayuda recibida.
+Dominio: estado latente estimado respecto a una habilidad, no observable directo.
+Fading: reducir apoyo al contar con evidencia suficiente en tareas comparables.
+Prescripción: propuesta del sistema; recibirla no acredita aprendizaje propio.
+Idempotencia: repetir una operación identificada no duplica sus efectos.
+Revisión: número usado para rechazar operaciones sobre una vista desactualizada.
+IQR: Q3-Q1; sus límites detectan candidatos, no errores confirmados.
+KDE: representación suavizada de una distribución, sensible al ancho de banda.
+Benchmark: conjunto/procedimiento definido para comparar; no una única demo.
+Línea base: referencia explícita para interpretar el desempeño de una propuesta.
+
+Explicación breve reutilizable:
+SiGAD busca ayudar a usuarios novatos a aprender a investigar con datos. Organiza
+las actividades con PPDAC, calcula localmente el contexto verificable y ajusta
+el guidance mediante una política apoyada en evidencia y seguimiento BKT. El
+LLM evalúa respuestas o produce ayudas dentro de contratos definidos. Hoy hay
+un prototipo de Problema, Plan y preparación reversible de Datos, junto con un
+planificador experimental para las fases restantes. Falta completar y validar
+el alcance pedagógico y demostrar efectos educativos con usuarios.
+
+
+25. FUENTES Y TRAZABILIDAD
+============================================================
+
+Raíz de trabajo:
+/Users/xawii/Library/Mobile Documents/com~apple~CloudDocs/Tesis Proyecto/Code/Tesis-2026
+
+Fuentes académicas/personales principales leídas:
+- /Users/xawii/Downloads/Articulo_Proyecto_Final-4 (1).pdf: nueve páginas.
+- /Users/xawii/Downloads/revision tesis.pdf: ocho páginas.
+- Claude outputs/sigad_paper.tex.
+- Claude outputs/fundamentacion_metodo_tesis.md.
+- propuesta_sigad_revisada.md y Readme.md.
+- Guiones y textos locales de output/exposicion_papers/.
+- Módulos y pruebas identificados en el inventario técnico anexo.
+
+Chats recuperados, con sus títulos originales:
+- «Análisis de LLM en arquitectura guidance».
+- «Resume paper sobre IA agentic».
+- «listo entonces que modleo eductivo de aprenddioaje propones…».
+- «Resume y analiza el paper».
+- «Mejorar el artículo».
+- «Analiza recomendaciones de tesis».
+- «Definir métricas por objetivo».
+- «Definir evaluación con LLM o reglas».
+- «Organiza el árbol del PPDAC».
+- «Activar entorno virtual de Conda».
+- «Resume el paper».
+- «Analizar trabajos sobre LLM».
+- «Encuentra los papers de la tesis».
+También se consultaron chats breves del proyecto sin contenido sustantivo y
+el historial accesible titulado «Estructura de paper IEEE».
+
+La lectura de los chats se paginó hasta el fin disponible para los seleccionados;
+se usaron mensajes y resultados accesibles, no solamente títulos o resúmenes de
+la lista. Las afirmaciones de ejecuciones anteriores se marcaron como históricas.
+
+Referencias bibliográficas de trabajo conservadas en los materiales:
+Wolff et al. (2016), alfabetización en datos.
+Wild y Pfannkuch (1999), pensamiento estadístico/PPDAC.
+Wood, Bruner y Ross (1976), tutoría y andamiaje.
+Van de Pol, Volman y Beishuizen (2010), revisión del andamiaje.
+Corbett y Anderson (1994), knowledge tracing.
+Ceneda et al., Characterizing Guidance in Visual Analytics.
+Palomino Valdivia y Huillcen Baca (2025), GUIAVisWeb.
+Los cuatro papers LLM de Kazemitabaar, Zhao/LightVA, Xie/WaitGPT y Gu.
+Se conservan como fuentes del proyecto; sus metadatos finales deben comprobarse
+antes de entregar la bibliografía definitiva.
+
+Este documento no modifica ni aprueba automáticamente ninguna de las decisiones
+abiertas. Deja una memoria consolidada y una separación explícita entre ideas,
+implementación y evidencia, para que la siguiente etapa no vuelva a partir de
+supuestos de versiones anteriores.
+
+
+ANEXO A. MAPA TÉCNICO DEL CÓDIGO EN LA FECHA DE CORTE
+============================================================
+Las líneas permiten localizar implementación; no son una validación semántica
+de cada función. SHA-256 identifica el contenido revisado. Se omiten entornos,
+credenciales, cachés y archivos binarios generados.
+
+Categorizacion_Data.py | 8 líneas | SHA-256 e1624ca9769f4a5c4679d20d8406ad6ba343b657ba31e0d7f3c69db276c647dc
+
+Claude outputs/motor_adaptativo-1.py | 205 líneas | SHA-256 6f316dc08731cd27787bb2dfed94f2ccba45b657f920551e701e2452027ae241
+  L36: clase RastreadorConocimiento
+    Bayesian Knowledge Tracing simplificado (Corbett & Anderson, 1994) para decidir
+  L43: función RastreadorConocimiento.__init__
+  L51: función RastreadorConocimiento.actualizar
+    resultado: 'correcto', 'incorrecto' o 'timeout'.
+  L85: función RastreadorConocimiento.necesita_escalar
+  L90: clase EstadoHabilidad
+  L95: clase MotorAdaptativoPorHabilidad
+    Gestiona, para cada habilidad (p.ej. "detectar_nulos", "leer_correlaciones"),
+  L119: función MotorAdaptativoPorHabilidad.__init__
+  L128: función MotorAdaptativoPorHabilidad._estado
+  L135: función MotorAdaptativoPorHabilidad.nivel_de_entrada
+    Nivel (1-4) con el que debe iniciar la tarea actual para esta habilidad.
+  L139: función MotorAdaptativoPorHabilidad.p_sabe
+  L148: función MotorAdaptativoPorHabilidad.registrar_intento
+    Se llama en CADA intento dentro de una tarea (puede llamarse varias veces si
+  L165: función MotorAdaptativoPorHabilidad.cerrar_tarea
+    Se llama UNA vez, cuando la tarea terminó con éxito en `nivel_final_exitoso`.
+
+Claude outputs/motor_adaptativo.py | 185 líneas | SHA-256 af40abe7a36ffb46861e22feb63dd4aa678fbab550579a4298f35da8cd5cb9aa
+  L36: clase RastreadorConocimiento
+    Bayesian Knowledge Tracing simplificado (Corbett & Anderson, 1994) para decidir
+  L43: función RastreadorConocimiento.__init__
+  L51: función RastreadorConocimiento.actualizar
+    resultado: 'correcto', 'incorrecto' o 'timeout'.
+  L75: función RastreadorConocimiento.necesita_escalar
+  L80: clase EstadoHabilidad
+  L85: clase MotorAdaptativoPorHabilidad
+    Gestiona, para cada habilidad (p.ej. "detectar_nulos", "leer_correlaciones"),
+  L109: función MotorAdaptativoPorHabilidad.__init__
+  L118: función MotorAdaptativoPorHabilidad._estado
+  L125: función MotorAdaptativoPorHabilidad.nivel_de_entrada
+    Nivel (1-4) con el que debe iniciar la tarea actual para esta habilidad.
+  L129: función MotorAdaptativoPorHabilidad.p_sabe
+  L132: función MotorAdaptativoPorHabilidad.registrar_intento
+    Se llama en CADA intento dentro de una tarea (puede llamarse varias veces si
+  L145: función MotorAdaptativoPorHabilidad.cerrar_tarea
+    Se llama UNA vez, cuando la tarea terminó con éxito en `nivel_final_exitoso`.
+
+agente.py | 447 líneas | SHA-256 07f0b6dd2d7a5c2533fe1abec2f2168d89c020b2184f76b53fb1bb80f0a09ac9
+  L10: clase MotorAnalisis
+  L11: función MotorAnalisis.__init__
+  L18: función MotorAnalisis.evaluar_problema_fase1
+    El LLM evalúa una rúbrica; el backend decide BKT y nivel de apoyo.
+  L32: función MotorAnalisis.generar_apoyo_problema_fase1
+    Redacta una pista después de que la política selecciona Orientar.
+  L44: función MotorAnalisis.generar_opciones_problema_fase1
+    Genera las cuatro rutas del nivel Dirigir sin decidir el nivel.
+  L58: función MotorAnalisis.prescribir_opcion_problema_fase1
+    Selecciona una ruta cuando el motor ya activó Prescribir.
+  L72: función MotorAnalisis.evaluar_plan_fase2
+    Valora la rúbrica del Plan; no decide el grado de apoyo.
+  L89: función MotorAnalisis._entrada_plan_compacta
+    No repetir esquemas de gráficos ni todo el historial en cada llamada.
+  L103: función MotorAnalisis.generar_apoyo_plan_fase2
+    Redacta el apoyo del grado elegido por la política del backend.
+  L115: función MotorAnalisis.obtener_taxonomia
+    Obtiene todas las variables disponibles, agrupadas por tipo.
+  L123: función MotorAnalisis.obtener_diagnostico_calidad
+    Obtiene el resumen de calidad calculado por Pandas en la API local.
+  L131: función MotorAnalisis.obtener_analisis_escalado_transformacion
+    Obtiene el resumen de escalado calculado por Pandas para el objetivo.
+  L141: función MotorAnalisis.generar_diagnostico
+  L157: función MotorAnalisis.generar_diagnostico_calidad
+  L178: función MotorAnalisis.generar_mapa_variables
+  L189: función MotorAnalisis.generar_descripcion_variables
+    Describe de manera breve qué representa cada variable del dataset.
+  L200: función MotorAnalisis.generar_preguntas_relaciones
+    Identifica el tema del dataset y propone preguntas entre sus variables.
+  L212: función MotorAnalisis.validar_pregunta_F1_1
+    Evalúa si una pregunta se puede responder con las variables del dataset.
+  L226: función MotorAnalisis.generar_tres_preguntas_sugeridas
+    Genera tres preguntas viables para orientar al estudiante.
+  L237: función MotorAnalisis.explicar_pregunta_elegida
+    Explica la utilidad de una pregunta seleccionada para el dataset.
+  L248: función MotorAnalisis.prescribir_pregunta
+    Elige la mejor pregunta sugerida cuando el estudiante no selecciona una.
+  L262: función MotorAnalisis.evaluar_estrategia_fase2
+    Evalúa una estrategia sin recalcular el dataset en el LLM.
+  L288: función MotorAnalisis.explicar_alternativa_correcta_fase2
+    Explica por qué una alternativa correcta prepara el dataset.
+  L305: función MotorAnalisis.obtener_analisis_nulos_columna
+    Llama al endpoint Flask que calcula las estadísticas Pandas de una columna.
+  L315: función MotorAnalisis.analizar_nulos_columna_fase3
+    Obtiene el análisis mecánico de Pandas y pide al LLM que clasifique
+  L331: función MotorAnalisis.obtener_plan_maestro_nulos
+    Obtiene el diagnóstico global de nulos de Flask y pide un plan maestro al LLM.
+  L354: función MotorAnalisis.analizar_batch_nulos
+    Pide a Flask las estadísticas reales de un lote de columnas y consulta al LLM.
+  L373: función MotorAnalisis.obtener_analisis_outliers_batch_fase3
+    Fase 3 — Outliers: calcula IQR, sesgo y registros atípicos.
+  L383: función MotorAnalisis.analizar_batch_outliers_fase3
+    Fase 3 — solicita al LLM la recomendación para los outliers.
+  L412: función MotorAnalisis.analizar_batch_normalizacion_fase3
+    Fase 3 — analiza el escalado de variables numéricas.
+  L433: función MotorAnalisis.transformar_tiempo_fase3
+    Construye ``datetime`` en el DataFrame activo sin eliminar sus fuentes.
+
+app.py | 628 líneas | SHA-256 11b38089d99c5aeddeed7c3742cb88298e297200b5b093c0f98d4e1a926597da
+  L26: función evaluar_problema
+  L30: función recomendar_problema
+  L34: función prescribir_problema
+  L38: función generar_apoyo_problema
+  L46: función evaluar_plan
+  L50: función generar_apoyo_plan
+  L59: función permitir_frontend_externo
+    Permite probar el frontend desde Live Server o una vista previa del IDE.
+  L69: función ejecutar_llm
+    Ejecuta una acción del agente y convierte errores en respuestas JSON.
+  L78: función inicio
+    Ruta: app.route('/', methods=['GET'])
+  L83: función archivos_front
+    Ruta: app.route('/front/<path:archivo>', methods=['GET'])
+  L87: función get_tarjeta
+    Ruta: app.route('/api/tarjeta-identidad', methods=['GET'])
+  L125: función diagnostico_calidad
+    Ruta: app.route('/api/diagnostico-calidad', methods=['GET'])
+  L166: función taxonomia_variables
+    Ruta: app.route('/api/taxonomia-variables', methods=['GET'])
+  L186: función analisis_escalado_transformacion
+    Resumen matemático de Pandas; no transforma ninguna columna.
+    Ruta: app.route('/api/analisis-escalado-transformacion', methods=['GET'])
+  L257: función validar_pregunta
+    Ruta: app.route('/api/validar-pregunta', methods=['POST', 'OPTIONS'])
+  L270: función describir_variables
+    Ruta: app.route('/api/describir-variables', methods=['GET'])
+  L276: función preguntas_sugeridas
+    Ruta: app.route('/api/preguntas-sugeridas', methods=['GET'])
+  L282: función prescribir_pregunta
+    Ruta: app.route('/api/prescribir-pregunta', methods=['POST', 'OPTIONS'])
+  L298: función fase2_endpoint_anterior
+    Ruta: app.route('/api/fase2/evaluar-estrategia', methods=['POST', 'OPTIONS'])
+    Ruta: app.route('/api/fase2/explicar-alternativa-correcta', methods=['POST', 'OPTIONS'])
+  L310: función _calcular_analisis_nulos
+    Devuelve estadísticas Pandas + impacto mecánico de las 4 opciones de tratamiento.
+  L405: función analizar_nulos_columna_f3
+    Devuelve el análisis mecánico (Pandas) de una columna con nulos.
+    Ruta: app.route('/api/fase3/analizar-nulos-columna', methods=['GET'])
+  L417: función evaluar_tratamiento_nulos_fase3
+    Recibe una columna, calcula sus metadatos y los envía al LLM 
+    Ruta: app.route('/api/fase3/evaluar-tratamiento-nulos', methods=['POST', 'OPTIONS'])
+  L432: función analizar_batch_nulos_fase3
+    Endpoint que recibe un lote de columnas y devuelve las estadísticas reales para el LLM.
+    Ruta: app.route('/api/fase3/analizar-batch-nulos', methods=['POST', 'OPTIONS'])
+  L462: función analizar_batch_outliers_endpoint
+    Fase 3 — Outliers: identifica valores atípicos por IQR y devuelve los
+    Ruta: app.route('/api/fase3/analizar-batch-outliers', methods=['POST', 'OPTIONS'])
+  L553: función analizar_batch_normalizacion_endpoint
+    Fase 3 — Normalización: resume variables numéricas para decidir su escalado.
+    Ruta: app.route('/api/fase3/analizar-batch-normalizacion', methods=['POST', 'OPTIONS'])
+  L596: función transformar_tiempo_fase3
+    Crea la columna ``datetime`` desde year, month, day y hour.
+    Ruta: app.route('/api/fase3/transformar-tiempo', methods=['POST', 'OPTIONS'])
+
+calidad_fase2.py | 90 líneas | SHA-256 3352f5354b2c2c1130a35870f319cbbdbc3ddcbac5a5aa8d7735c1d8005375c1
+  L6: función referencias
+  L16: función resumen_calidad
+  L76: función detalle_calidad
+
+dataUnderstanding.py | 83 líneas | SHA-256 b164004fe8bd054f95160d657a64e1eb2131bf7d55f6f78145156b65a375f061
+  L10: clase MiAsistente
+  L11: función MiAsistente.__init__
+  L43: función MiAsistente.preguntar
+
+fase1.py | 775 líneas | SHA-256 5dba865d1155285b009d569def6b04ef136e0c93fbe3f3872917fd47fc3f9779
+  L39: función fechas_del_dataset
+  L49: función validar_seleccion_multiple
+  L67: clase Explorador
+  L68: función Explorador.__init__
+  L78: función Explorador.rol
+  L90: función Explorador.espacial
+  L106: función Explorador.numerica
+  L109: función Explorador.opciones
+  L146: función Explorador._perfil
+  L173: función Explorador.grafico
+  L283: función validar_evaluacion
+  L313: función validar_recomendaciones
+  L336: función validar_prescripcion
+  L346: función contexto_valido
+  L373: función guidance
+  L404: función validar_apoyo
+  L415: función registrar_fase1
+  L420: función registrar_fase1.recuperar
+  L429: función registrar_fase1.estado
+  L436: función registrar_fase1.contexto_recomendacion
+  L464: función registrar_fase1.perfil_f1
+    Ruta: app.get('/api/fase1/perfil')
+  L468: función registrar_fase1.grafico_f1
+    Ruta: app.get('/api/fase1/grafico')
+  L478: función registrar_fase1.sesion_f1
+    Ruta: app.post('/api/fase1/sesion')
+  L501: función registrar_fase1.estado_f1
+    Ruta: app.get('/api/fase1/estado')
+  L509: función registrar_fase1.accion_f1
+    Ruta: app.post('/api/fase1/accion')
+  L557: función registrar_fase1.apoyo_f1
+    Ruta: app.post('/api/fase1/apoyo')
+  L589: función registrar_fase1.apoyo_avanzado_f1
+    Ruta: app.post('/api/fase1/apoyo-avanzado')
+  L635: función registrar_fase1.seleccionar_opcion_f1
+    Ruta: app.post('/api/fase1/seleccionar-opcion')
+  L661: función registrar_fase1.evaluar_f1
+    Ruta: app.post('/api/fase1/evaluar')
+
+fase2.py | 532 líneas | SHA-256 fc3941fc449f13a3d1cdb59a92739d415b715f530aa76c138db7108e1a9f52eb
+  L29: función acciones_disponibles
+  L43: función objeto
+  L51: función texto
+  L57: función validar_plan
+  L76: función validar_evaluacion
+  L100: función validar_apoyo
+  L120: función plan_desde_seleccion
+    Organiza decisiones ya guardadas; no añade tratamientos del modelo.
+  L134: función prescribir_plan
+    Resuelve el plan desde el objetivo confirmado, no desde elecciones pendientes.
+  L173: función error_evaluacion
+    Mensajes útiles sin mostrar credenciales ni respuestas crudas del proveedor.
+  L192: función diagnosticar
+    Solo calcula resúmenes sobre la copia de datos de fase 1; no transforma.
+  L220: función registrar_fase2
+  L224: función registrar_fase2.recuperar
+  L231: función registrar_fase2.estado
+  L238: función registrar_fase2.entrada
+  L254: función registrar_fase2.comprobar_revision
+  L258: función registrar_fase2.sesion_f2
+    Ruta: app.post('/api/fase2/sesion')
+  L294: función registrar_fase2.estado_f2
+    Ruta: app.get('/api/fase2/estado')
+  L302: función registrar_fase2.muestra_f2
+    Ruta: app.get('/api/fase2/muestra')
+  L322: función registrar_fase2.calidad_f2
+    Ruta: app.get('/api/fase2/calidad')
+  L338: función registrar_fase2.borrador_f2
+    Ruta: app.post('/api/fase2/borrador')
+  L374: función registrar_fase2.evaluar_f2
+    Ruta: app.post('/api/fase2/evaluar')
+  L441: función registrar_fase2.accion_f2
+    Ruta: app.post('/api/fase2/accion')
+  L470: función registrar_fase2.apoyo_f2
+    Ruta: app.post('/api/fase2/apoyo')
+  L512: función registrar_fase2.seleccionar_f2
+    Ruta: app.post('/api/fase2/seleccionar')
+
+fase3.py | 342 líneas | SHA-256 fe1b4adfc3f8266d3760a301d33a98799769250c7fd04ad33b12f77c7f0c4ae7
+  L11: función transformar
+  L43: función grafico_preparacion
+    Agrega todos los registros; conserva huecos y posiciones al excluir filas.
+  L82: función ventana_nulos
+    Mismas posiciones antes/después, dentro de una estación si existe.
+  L110: función comparar_kde
+    KDE gaussiana exacta con rejilla y ancho comunes para las tres curvas.
+  L117: función comparar_kde.estadisticas
+  L152: función dispersion_registros
+  L168: función resumen
+  L195: función registrar_fase3
+  L198: función registrar_fase3.recuperar
+  L204: función registrar_fase3.estado
+  L210: función registrar_fase3.iniciar_datos
+    Ruta: app.post('/api/fase3/sesion')
+  L237: función registrar_fase3.operar_datos
+    Ruta: app.post('/api/fase3/operacion')
+  L335: función registrar_fase3.descargar_datos
+    Ruta: app.get('/api/fase3/descargar')
+
+front/app.js | 118 líneas | SHA-256 9a920fca49e61894c43096880357c627c376b1769a9d0673f6a3107c43dd1961
+  L8: async function api(path, options = {}) {
+  L15: function addMessage(title, text, kind = 'system') {
+  L24: function addHistory(label) {
+  L30: function setLevel(level) {
+  L35: function setScreen(title, sectionTitle, description) {
+  L49: async function startPhase2() {
+  L76: async function startPhase3(origin) {
+  L83: catch(error){addMessage('No se pudo abrir la fase 3',error.message,'warning');interaction.append(Object.assign(document.createElement('button'),{textContent:'Vo
+  L86: async function restartPhase1() {
+  L109: async function init() {
+
+front/calidad-fase2.js | 170 líneas | SHA-256 d17aa2d1f6e9b940cec4c848f15213b4afa44f875c0f8bd36b57150b90762119
+  L3: async loadQuality() {
+  L18: svgNode(tag, attributes = {}, text) {
+  L24: visualGuidance(q,missing=true) {
+  L39: renderQualityLaboratory(content) {
+  L63: if(level < 4 && !this.session.completada) {
+  L73: drawReferences(svg,ref,y,box,periodos) {
+  L86: drawMissing(q,box) {
+  L95: if(b.media === null) {connected=false;return;}
+  L98: if(q.numerica) {
+  L125: drawDifferent(q,box) {
+  L126: if(!q.numerica) {box.append(this.node('p','Esta variable no es una medida numérica. Explora sus faltantes o elige una medida para observar valores atípicos.'));
+  L144: if(this.qualityDetail?.variable === q.variable) {
+  L150: async inspectPoint(variable,fila) {
+  L152: catch(e){this.error=e.message;this.render();}
+  L154: renderVisualDecisions(q,box,missing=this.qualityTab==='faltantes') {
+  L158: if(!actions.length) {section.append(this.node('p',missing?'No hay celdas vacías que requieran un tratamiento en esta variable.':'No hay candidatos atípicos que 
+
+front/fase1.css | 100 líneas | SHA-256 762e8880da2b0c8a57f0551f7572d93340a4f34952445b7802ca0109fa2c1e40
+
+front/fase1.js | 529 líneas | SHA-256 15f25fc2099cd03471f6f2798686e7a7af7bb13a2dbea490ba59dbf1a779da33
+  L3: constructor(host, api, callbacks) {
+  L10: async request(path, body) {
+  L16: async mount() {
+  L86: stopClock() { clearInterval(this.clock); this.clock = null; }
+  L87: startClock() {
+  L99: selectedVariables() {
+  L106: temporalVariables() { return this.selectedVariables(); }
+  L107: context() { return { variable: this.variable, vista: this.vista, secundaria: this.secundaria }; }
+  L108: compatible(col, vista, categoria=this.variable) {
+  L115: async switchView(vista) {
+  L129: async toggleVariable(col) {
+  L142: textNode(tag, text, className) {
+  L147: renderVariables() {
+  L166: describe(v) {
+  L170: renderQuality() {
+  L186: renderSession() {
+  L221: renderAdvanced() {
+  L259: async ensureAdvanced() {
+  L283: async selectOption(index) {
+  L292: renderFeedback(result) {
+  L301: setBusy(value) {
+  L309: async action(accion, extra = {}) {
+  L323: async select(variable, vista, secundaria, variables) {
+  L332: async handleError(e) {
+  L343: async evaluate() {
+  L366: async loadChart() {
+  L381: drawPanels(chart) {
+  L386: if(!chart.paneles.length) {
+  L401: if(chart.paneles.length>count) {
+  L410: drawChart(chart=this.chart, node=this.$('[data-chart]'), legend=this.$('[data-series-legend]'), panel=false) {
+
+front/fase2.css | 130 líneas | SHA-256 f076978e3a90de76b23a8c8c46234a7dc3b7bfcd9cb1efaa421178e5bc0d7c02
+
+front/fase2.js | 318 líneas | SHA-256 a064f7d339a7f4c318c4e5431e580885fe819df478ffd841c51ba4012e0e40c8
+  L3: constructor(host, interaction, api, callbacks) {
+  L7: async request(path, body) {
+  L15: node(tag, text, className) {
+  L20: button(text, handler, className = '') {
+  L24: async mount() {
+  L34: stopClock() { clearTimeout(this.clock); this.clock = null; }
+  L35: startClock() {
+  L39: destroy() { this.stopClock(); this.host?.classList.remove('phase1-host', 'phase2-host'); this.host = null; }
+  L40: showPlan(plan, parent) {
+  L49: format(value) { return value == null ? 'Sin dato' : String(value); }
+  L50: renderExplorer(aside, content) {
+  L113: async toggleVariable(col) {
+  L129: async chooseTreatment(col, group, action) {
+  L135: renderOtherPreparation(content) {
+  L165: composedProposal() {
+  L176: render() {
+  L279: async failure(error) {
+  L285: async mutate(path, body) {
+  L295: async evaluate(propuesta) {
+  L304: async action(accion) {
+  L310: async ensureSupport() {
+  L315: async select(indice) {
+
+front/fase3.css | 103 líneas | SHA-256 2b91335a57ff27ffbd125a3a095f5ec639939e9c0642b4b57cd6b9580354a663
+
+front/fase3.js | 404 líneas | SHA-256 6828191372659ad94c89bfb6afbd07e769b26ac77bc4eff466ef9b523f63ae7a
+  L2: constructor(host,api,origin,onState) {Object.assign(this,{host,api,origin,onState,step:'nulos',column:null,choice:null,preview:null,busy:false,error:''});}
+  L3: node(tag,text,cls) {const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;}
+  L4: button(text,fn) {const b=this.node('button',text);b.type='button';b.disabled=this.busy;b.onclick=fn;return b;}
+  L5: async mount() {
+  L10: async action(operacion,extra={}) {
+  L18: if(operacion==='previsualizar'){this.focusResult=true;this.missingWindow=r.previa?.ventana||null;}
+  L21: if(operacion==='aplicar'){this.notice='Tratamiento aplicado: la tabla y los gráficos ya usan la copia actualizada.';}
+  L22: if(operacion==='deshacer'){this.notice='Tratamiento deshecho: se restauraron los datos anteriores.';}
+  L26: options() {
+  L31: table(data) {
+  L37: svg(tag,attrs={},text) {
+  L42: changedChart(examples) {
+  L54: if(typeof value==='number') {
+  L65: comparison(before,after) {
+  L84: if(!p||p.valor===null){connected=false;return;}
+  L114: outlierScatter(before,after) {
+  L118: if(!d){box.append(this.node('p','No hay mediciones numéricas válidas.'));return box;}
+  L135: if(after&&(p.eliminado||p.despues!==p.valor)){
+  L136: if(p.eliminado){
+  L153: outlierComparison(before,after) {
+  L160: if(!valid.length){box.append(this.node('p','No hay mediciones numéricas disponibles para construir el boxplot.'));return box;}
+  L168: if(!d){svg.append(this.svg('text',{x,y:140,'text-anchor':'middle'},'Sin valores válidos'));return;}
+  L181: kdeComparison(data) {
+  L186: if(!kde.x.length){box.append(this.node('p',kde.motivo));return box;}
+  L217: missingComparison(before,after) {
+  L221: if(original){
+  L242: if(!records.length){box.append(this.node('p','No hay registros para ampliar.'));return box;}
+  L255: if(typeof value==='number'){
+  L264: scaleComparison(before,after) {
+  L267: if(!this.scaleColumns.length){box.append(this.node('p','Selecciona al menos una medida del panel izquierdo.'));return box;}
+  L273: if(!data){card.append(this.node('p','Selecciona «Normalizar entre 0 y 1» para calcular la comparación.'));grid.append(card);return;}
+  L300: render() {
+  L316: if(this.step==='escalas'){
+  L319: if(this.scaleColumns.length){this.choice=this.choice||'normalizar';this.action('previsualizar');}else this.render();
+  L345: if(s.nivel<4){
+  L372: if(kde){
+  L381: if(this.preview) {
+  L389: if(s.historial.length){current.append(this.button('Deshacer último tratamiento',()=>this.action('deshacer')));s.historial.forEach(h=>current.append(this.node('p
+  L391: if(this.focusResult&&this.preview) {
+  L397: async download() {
+
+front/index.html | 65 líneas | SHA-256 306099e621d6e964827a48caf0153be189e41660b59ea0ca2d725185b947f4c6
+  L7: <link rel="stylesheet" href="/front/styles.css" />
+  L8: <link rel="stylesheet" href="/front/fase2.css" />
+  L9: <link rel="stylesheet" href="/front/fase3.css" />
+  L10: <link rel="stylesheet" href="/front/fase1.css" />
+  L12: <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  L59: <script src="/front/fase1.js"></script>
+  L60: <script src="/front/fase2.js"></script>
+  L61: <script src="/front/calidad-fase2.js"></script>
+  L62: <script src="/front/fase3.js"></script>
+  L63: <script src="/front/app.js"></script>
+
+front/styles.css | 1 líneas | SHA-256 d5b2a046bcd7b38e41a4d25cbc52b3e83136a9c10b1f1d2011da58653e4018b4
+
+groq.py | 64 líneas | SHA-256 b21caf96bdf6caa9712ad874d3eef611f07cc70f12303ccebcad49daac754591
+  L28: clase MiAsistente
+  L29: función MiAsistente.__init__
+  L36: función MiAsistente.preguntar
+
+lightVA.py | 835 líneas | SHA-256 c10f65f7c8e51d8895a62cfeffa2c3b60384011719df9adf71cbd1cce17788a4
+  L115: función perfil_dataset
+    Calcula contexto compacto local; no envía filas completas al proveedor.
+  L151: función esquema_salida
+    Contrato del proveedor: campos obligatorios, sin extras y columnas enum.
+  L153: función esquema_salida.objeto
+  L191: función validar_pedagogia
+  L202: función agrupar_actividades
+    Reconstruye tareas y subtareas sin pedir al modelo el árbol PPDAC.
+  L243: clase TextoRepetido
+    Variantes textuales pendientes de conciliar, nunca último valor implícito.
+  L245: función TextoRepetido.__init__
+  L249: función decodificar_json
+    Lee JSON estricto; admite fases separadas sin descartar contenido.
+  L251: función decodificar_json.pares_unicos
+  L299: función validar_plan
+  L302: función validar_plan.variables
+  L313: función validar_plan.texto
+  L330: función validar_plan.registrar
+  L362: clase LightVA
+  L363: función LightVA.__init__
+  L376: función LightVA.planificar
+  L382: función LightVA.planificar.validar_interpretacion
+  L493: función LightVA._planificar_secuencial
+    Reutiliza la interpretación y mantiene contexto entre fases.
+  L553: función LightVA._consultar
+    Hasta dos reintentos TPM, con un máximo de 45 s de espera acumulada.
+  L603: función LightVA._reparar_textos_duplicados
+  L605: función LightVA._reparar_textos_duplicados.recorrer
+  L628: función LightVA._reparar_textos_duplicados.validar_reparacion
+  L649: función LightVA._pedir_json
+  L722: función mostrar
+  L747: función main
+
+main.py | 8 líneas | SHA-256 86889f9c284de337dca6bb0938b9559002a4a7b38c2367c3cacc4a454cb947e5
+
+main_fase3.py | 31 líneas | SHA-256 65f4915360e0d0ccfdabfd08172cafd4134998acae487763ab37e4c773dfcfb3
+  L4: función ejecutar_prueba_outliers
+    Fase 3 — Outliers: muestra los valores concretos detectados.
+
+motor_fase1.py | 108 líneas | SHA-256 3199a32a59caeb1f658cce60e8bd55f19f1529c4c72d0103adc3fd8466ed5b1f
+  L15: clase Habilidad
+  L20: clase MotorFase1
+  L23: función MotorFase1.__init__
+  L38: función MotorFase1.ayuda
+  L43: función MotorFase1.prescribir
+  L48: función MotorFase1.registrar_timeout
+    La inactividad activa ayuda, pero no acredita error de conocimiento.
+  L57: función MotorFase1.registrar
+    Una observación por intento; prescripción no aporta aciertos a BKT.
+  L93: función MotorFase1.nueva_tarea
+  L101: función MotorFase1.resumen
+
+motor_fase2.py | 14 líneas | SHA-256 8bf178eab1504c1ccac443521ec57c96b0eb6aa6c360808db28bb818ca331e3b
+  L13: clase MotorFase2
+
+prompts.py | 700 líneas | SHA-256 4727fcf62daaa379b09bea2c80beb92b00f497fea2c6193929722884f5e26ccd
+  L3: función obtener_prompt_diagnostico2
+  L13: función obtener_prompt_diagnostico3
+  L31: función obtener_prompt_diagnostico
+  L43: función obtener_prompt_calidad2
+  L58: función obtener_prompt_calidad
+  L69: función obtener_prompt_taxonomia
+  L80: función obtener_prompt_preguntas_relaciones
+  L103: función obtener_prompt_validacion_pregunta
+  L130: función obtener_prompt_tres_preguntas_sugeridas
+  L150: función obtener_prompt_descripcion_variables
+  L166: función obtener_prompt_explicacion_pregunta_elegida
+  L183: función obtener_prompt_prescripcion_pregunta
+  L203: función obtener_prompt_evaluacion_fase2
+  L307: función obtener_prompt_explicacion_alternativa_correcta_fase2
+  L331: función obtener_prompt_analisis_nulos_fase3
+    Genera el prompt que recibe el LLM con todos los números de Pandas.
+  L421: función obtener_prompt_plan_maestro_nulos_fase3
+  L439: función obtener_prompt_batch_nulos_fase3
+  L469: función obtener_prompt_batch_outliers
+  L494: función obtener_prompt_batch_normalizacion
+  L591: función obtener_prompt_rubrica_fase1
+  L633: función obtener_prompt_opciones_fase1
+  L637: función obtener_prompt_prescripcion_fase1
+  L522: contrato PROMPT_RUBRICA_FASE1
+  L596: contrato PROMPT_APOYO_FASE1
+  L609: contrato PROMPT_OPCIONES_FASE1
+  L623: contrato PROMPT_PRESCRIPCION_FASE1
+  L641: contrato PROMPT_RUBRICA_PLAN_FASE2
+  L679: contrato PROMPT_APOYO_PLAN_FASE2
+
+prueba.py | 10 líneas | SHA-256 76719b40d5aa438b18f88ba4e343182cc5d54426571f4966790582e4f3ca28f4
+
+tests/test_calidad_fase2.py | 73 líneas | SHA-256 cfe23e0acd539995530facb386976acd3beb06f9ec75c3f552da779c0eef2674
+  L8: clase TestCalidadVisual
+  L9: función TestCalidadVisual.test_referencias_distinguen_medias_de_periodo_de_registros
+  L18: función TestCalidadVisual.test_media_atipica_usa_limites_iqr_y_no_solo_cuartiles
+  L31: función TestCalidadVisual.test_hueco_sin_registros_no_es_celda_vacia
+  L42: función TestCalidadVisual.test_extremo_es_candidato_y_no_desaparece_en_muestra
+  L50: función TestCalidadVisual.test_vecinos_conservan_estacion
+  L57: función TestCalidadVisual.test_categorias_sin_fechas_y_archivo_vacio
+  L66: función TestCalidadVisual.test_fechas_invalidas_declaradas_y_no_convertidas_en_periodos
+
+tests/test_fase1.py | 437 líneas | SHA-256 df1223ea2833e7b5fd68f6cdc8aa8ee2efcb82ee00125cd7c8a8b55981cf842f
+  L12: función rubrica
+  L21: función dataset
+  L29: función recomendaciones
+  L39: clase TestMotor
+  L40: función TestMotor.test_formula_correcta
+  L46: función TestMotor.test_error_escala_un_grado
+  L52: función TestMotor.test_ayuda_no_actualiza_bkt
+  L56: función TestMotor.test_timeout_no_es_evidencia_y_escala
+  L64: función TestMotor.test_prescripcion_no_cuenta_como_acierto
+  L71: función TestMotor.test_fading_solo_en_siguiente_tarea
+  L80: función TestMotor.test_reintentos_no_son_tareas_distintas
+  L85: función TestMotor.test_intento_duplicado_no_actualiza
+  L90: función TestMotor.test_verificacion_no_retira_apoyo_sin_evidencia
+  L100: clase TestPerfil
+  L101: función TestPerfil.setUp
+  L103: función TestPerfil.test_evolucion_tres_series_conserva_valores_y_huecos
+  L114: función TestPerfil.test_paneles_numericos_conservan_cada_calculo
+  L122: función TestPerfil.test_relaciones_multivariables_compara_cada_pareja_una_vez
+  L129: función TestPerfil.test_frecuencias_y_varias_medidas_por_categoria
+  L138: función TestPerfil.test_roles_y_fechas_no_se_tratan_como_medidas
+  L149: función TestPerfil.test_comparacion_categoria_excluye_faltantes_y_admite_negativos
+  L155: función TestPerfil.test_una_estacion_muestra_conteo_y_aviso
+  L160: función TestPerfil.test_categorias_sin_medidas_y_alta_cardinalidad
+  L167: función TestPerfil.test_detecta_coordenadas_validas_sin_inventar_ubicaciones
+  L175: función TestPerfil.test_hueco_temporal
+  L179: función TestPerfil.test_cinco_graficos
+  L184: función TestPerfil.test_histograma_y_medias_excluyen_faltantes
+  L190: función TestPerfil.test_constante_y_variable_inexistente
+  L194: función TestPerfil.test_no_tiempo_no_vistas_temporales
+  L199: función TestPerfil.test_json_esquema_y_columnas
+  L204: función TestPerfil.test_recomendaciones_exigen_cuatro_opciones_y_columnas_reales
+  L211: clase TestAPI
+  L212: función TestAPI.setUp
+  L225: función TestAPI.evaluar
+  L232: función TestAPI.test_perfil_serializable
+  L235: función TestAPI.test_seleccion_multiple_se_conserva_al_evaluar
+  L247: función TestAPI.test_quitar_ultima_serie_no_evalua_y_no_penaliza
+  L256: función TestAPI.test_contexto_y_evaluacion_conservan_paneles_multiples
+  L266: función TestAPI.test_contexto_comparacion_varias_medidas
+  L275: función TestAPI.test_sesion_categoria_evaluacion_y_apoyo
+  L288: función TestAPI.test_completa_y_conserva_objetivo
+  L293: función TestAPI.test_intencion_breve_incompleta_no_se_acepta
+  L304: función TestAPI.test_intencion_ciclica_tiene_prioridad_sobre_vista_activa
+  L315: función TestAPI.test_incorrecta_y_aislamiento
+  L321: función TestAPI.test_proveedor_y_json_invalido_no_penalizan
+  L330: función TestAPI.test_repeticion_idempotente
+  L334: función TestAPI.test_campo_vacio_no_evalua
+  L338: función TestAPI.test_ayuda_y_contexto_preservan_probabilidad
+  L346: función TestAPI.test_timeout_conserva_bkt_y_escala
+  L353: función TestAPI.test_evaluador_recibe_entrada_completa_y_ayuda_previa
+  L368: función TestAPI.test_pista_llm_usa_decision_y_no_actualiza_bkt
+  L382: función TestAPI.test_pista_invalida_no_modifica_estado
+  L392: función TestAPI.subir_nivel
+  L397: función TestAPI.test_dirigir_ofrece_cuatro_y_seleccion_no_actualiza_bkt
+  L410: función TestAPI.test_prescribir_elige_y_completa_sin_actualizar_bkt
+  L420: función TestAPI.test_recomendacion_invalida_no_cambia_bkt
+  L429: función TestAPI.test_revision_obsoleta
+  L433: función TestAPI.test_sesion_desconocida
+
+tests/test_fase2.py | 337 líneas | SHA-256 07a37484f098e929cdeb440a78451e651dd63ed4c0cc4781e5169537362fe102
+  L13: función plan
+  L18: función rubrica
+  L25: clase TestContratoPlan
+  L26: función TestContratoPlan.test_entrada_llm_elimina_esquemas_de_graficos_y_no_muta_original
+  L38: función TestContratoPlan.test_rubrica_completa_y_columnas
+  L48: función TestContratoPlan.test_no_admite_plan_resuelto_en_orientar
+  L52: función TestContratoPlan.test_dirigir_requiere_tres_planes_distintos
+  L56: función TestContratoPlan.test_motor_usa_habilidades_de_plan_y_no_de_problema
+  L64: clase TestFase2API
+  L65: función TestFase2API.setUp
+  L81: función TestFase2API.post
+  L87: función TestFase2API.evaluar
+  L90: función TestFase2API.subir
+  L94: función TestFase2API.test_requiere_objetivo_confirmado_en_servidor
+  L100: función TestFase2API.test_objetivo_heredado_diagnostico_y_datos_intactos
+  L110: función TestFase2API.test_muestra_contiene_columnas_filas_y_ejemplos_sin_modificar_dominio
+  L125: función TestFase2API.test_muestra_requiere_sesion
+  L128: función TestFase2API.test_exploracion_calidad_no_actualiza_conocimiento
+  L141: función TestFase2API.test_seleccion_multiple_y_retiro_conservan_bkt
+  L152: función TestFase2API.test_tratamientos_deben_corresponder_a_seleccion_y_diagnostico
+  L163: función TestFase2API.test_evaluacion_recibe_seleccion_guardada
+  L170: función TestFase2API.test_exito_actualiza_solo_habilidades_de_plan
+  L178: función TestFase2API.test_entrada_contiene_rubrica_ayuda_y_contexto
+  L192: función TestFase2API.test_fallo_escala_un_grado_aunque_cliente_fuerce_otro
+  L199: función TestFase2API.test_ayuda_y_timeout_no_actualizan_bkt
+  L206: función TestFase2API.test_proveedor_y_json_invalidos_no_penalizan
+  L214: función TestFase2API.test_rubrica_valida_no_depende_del_plan_redactado_por_llm
+  L224: función TestFase2API.test_limite_proveedor_se_distingue_y_conserva_seleccion
+  L225: clase TestFase2API.test_limite_proveedor_se_distingue_y_conserva_seleccion.LimiteProveedor
+  L236: función TestFase2API.test_esquema_invalido_indica_causa
+  L241: función TestFase2API.test_idempotencia_y_colision_de_identificador
+  L247: función TestFase2API.test_revision_obsoleta_y_propuesta_vacia
+  L252: función TestFase2API.test_restaurar_sesion_no_reinicia_dominio
+  L257: función TestFase2API.test_pista_se_genera_una_vez_sin_actualizar_bkt
+  L265: función TestFase2API.test_apoyo_invalido_no_cambia_estado_y_se_puede_reintentar
+  L273: función TestFase2API.test_seleccion_asistida_no_acredita_dominio
+  L283: función TestFase2API.test_prescripcion_no_acredita_dominio
+  L292: función TestFase2API.test_prescribir_resuelve_variables_sin_copiar_seleccion_incorrecta
+  L303: función TestFase2API.test_salto_directo_desde_autonomo_y_plan_prescrito
+  L312: función TestFase2API.test_salto_fase1_desde_autonomo_sin_acreditar_acierto
+  L321: función TestFase2API.test_sesiones_aisladas
+  L326: función TestFase2API.test_diagnostico_categorico_espacial_y_sin_alertas
+
+tests/test_fase3.py | 227 líneas | SHA-256 1a9c7d6ea13cd75f34cf8c4f62f9bbae56a8711a0273adf6f801f1f2e7fe1a61
+  L9: clase PreparacionTests
+  L10: función PreparacionTests.setUp
+  L23: función PreparacionTests.operation
+  L27: función PreparacionTests.test_preview_apply_undo_preserves_original
+  L39: función PreparacionTests.test_drop_and_download_context
+  L47: función PreparacionTests.test_reject_unselected_and_unconfirmed
+  L52: función PreparacionTests.test_scaling_and_clip
+  L64: función PreparacionTests.test_media_y_exclusion_muestran_efectos_distintos
+  L80: función PreparacionTests.test_grafico_conserva_periodos_sin_datos
+  L87: función PreparacionTests.test_todas_las_alternativas_son_simulaciones_independientes
+  L101: función PreparacionTests.test_excluir_atipicos_no_excluye_nulos
+  L110: función PreparacionTests.test_normalizacion_conjunta_conserva_fechas_y_se_deshace_en_un_paso
+  L141: función PreparacionTests.test_saltar_a_prescribir_registra_apoyo_sin_aplicar_datos
+  L153: función PreparacionTests.test_boxplot_estadisticas_completas_y_extremos
+  L165: función PreparacionTests.test_ventana_mantiene_posiciones_excluidas_y_estacion
+  L179: función PreparacionTests.test_ampliar_no_pierde_tratamiento_pendiente
+  L186: función PreparacionTests.test_kde_mismo_ancho_media_mediana_y_dispersion
+  L204: función PreparacionTests.test_kde_sin_nulos_y_casos_degenerados
+  L215: función PreparacionTests.test_dispersion_no_equilibra_candidatos_y_habituales
+
+tests/test_lightva.py | 506 líneas | SHA-256 d5d6d6b0aefdb27f041cc09addb57550e5270a4f43ee089eaad6381063465ce7
+  L10: función interpretacion
+  L16: función pedagogia
+  L26: función fase
+  L35: clase TestLightVA
+  L36: función TestLightVA.motor
+  L42: función TestLightVA.preparar
+  L43: función TestLightVA.preparar.pedir
+  L54: función TestLightVA.test_rapido_dos_llamadas_y_dependencias_asignadas_por_python
+  L69: función TestLightVA.test_secuencial_conserva_cinco_llamadas_y_contexto_anterior
+  L76: función TestLightVA.test_no_acepta_fase_omitida_ni_columna_inventada
+  L85: función TestLightVA.test_interpretacion_texto_aislado_se_conserva_como_lista
+  L89: función TestLightVA.test_interpretacion_texto_aislado_se_conserva_como_lista.pedir
+  L99: función TestLightVA.test_interpretacion_rechaza_ausencia_null_objetos_y_listas_invalidas
+  L115: función TestLightVA.test_campo_omitido_se_repara_en_reintento_con_error_especifico
+  L130: función TestLightVA.test_fases_por_nombre_python_asigna_orden_y_numeros
+  L133: función TestLightVA.test_fases_por_nombre_python_asigna_orden_y_numeros.pedir
+  L141: función TestLightVA.test_no_renumera_lista_que_contiene_problema
+  L143: función TestLightVA.test_no_renumera_lista_que_contiene_problema.fallo
+  L149: función TestLightVA.test_error_columna_indica_ubicacion_y_nombres_permitidos
+  L151: función TestLightVA.test_error_columna_indica_ubicacion_y_nombres_permitidos.fallo
+  L157: función TestLightVA.sdk
+  L163: función TestLightVA.respuesta
+  L167: función TestLightVA.test_cuota_tpm_espera_y_reintenta_sin_perder_la_consulta
+  L181: función TestLightVA.test_cuota_diaria_o_peticion_demasiado_grande_no_reintenta
+  L196: función TestLightVA.test_respeta_retry_after_y_acota_dos_reintentos
+  L209: función TestLightVA.test_limita_salida_razonamiento_y_registra_tiempo
+  L219: función TestLightVA.test_respuesta_truncada_no_se_acepta_como_plan
+  L226: función TestLightVA.test_reparacion_no_reenvia_la_respuesta_fallida_completa
+  L238: función TestLightVA.test_planificar_envia_esquema_en_ambas_llamadas
+  L251: función TestLightVA.test_fallo_rapido_no_dispara_cascada_costosa_de_llamadas
+  L256: función TestLightVA.test_fallo_rapido_no_dispara_cascada_costosa_de_llamadas.pedir
+  L265: función TestLightVA.test_esquema_invalido_preserva_diagnostico_y_no_inicia_fases
+  L270: función TestLightVA.test_esquema_invalido_preserva_diagnostico_y_no_inicia_fases.pedir
+  L280: función TestLightVA.test_sdk_recibe_json_schema_strict
+  L291: función TestLightVA.test_rechazo_de_esquema_no_degrada_a_texto_libre
+  L301: función TestLightVA.test_todos_los_objetos_del_esquema_son_cerrados_y_obligatorios
+  L302: función TestLightVA.test_todos_los_objetos_del_esquema_son_cerrados_y_obligatorios.revisar
+  L315: función TestLightVA.test_cache_de_respuestas_validas_no_repite_red_y_aisla_mutaciones
+  L325: función TestLightVA.test_repetir_pregunta_reanuda_fase_pendiente_tras_cuota
+  L345: función TestLightVA.test_cache_no_reutiliza_contextos_distintos
+  L353: función TestLightVA.test_cuota_de_treinta_segundos_se_puede_recuperar
+  L363: función TestLightVA.test_prescribir_duplicado_identico_no_regenera
+  L371: función TestLightVA.test_prescribir_distinto_se_repara_solo_el_campo
+  L387: función TestLightVA.test_cuota_durante_correccion_conserva_plan_sin_regenerarlo
+  L404: función TestLightVA.test_dos_429_cortos_se_recuperan_sin_reprocesar
+  L407: función TestLightVA.test_dos_429_cortos_se_recuperan_sin_reprocesar.cuota
+  L418: función TestLightVA.test_espera_total_no_supera_45_segundos
+  L430: función TestLightVA.test_json_invalido_solo_reintenta_una_vez
+  L438: clase TestActividades
+  L439: función TestActividades.actividades
+  L443: función TestActividades.test_agrupar_no_pierde_metodos_verificaciones_ni_columnas
+  L454: función TestActividades.test_no_pierde_el_andamiaje_al_reconstruir_el_plan
+  L463: función TestActividades.test_rechaza_tarea_sin_evidencia_o_sin_andamiaje
+  L470: función TestActividades.test_esquemas_exigen_pedagogia_y_no_asignan_un_grado
+  L479: función TestActividades.test_rechaza_fase_omitida_y_numero_fuera_de_rango
+  L488: clase TestDecodificarJSON
+  L489: función TestDecodificarJSON.test_unico_objeto_se_conserva
+  L492: función TestDecodificarJSON.test_fases_separadas_se_unen_sin_perder_contenido
+  L497: función TestDecodificarJSON.test_rechaza_texto_extra_fases_incompletas_y_duplicados
+
+ANEXO B. DISTRIBUCIÓN DE PRUEBAS
+============================================================
+tests/test_calidad_fase2.py: 7 métodos test_ definidos.
+tests/test_fase1.py: 48 métodos test_ definidos.
+tests/test_fase2.py: 33 métodos test_ definidos.
+tests/test_fase3.py: 16 métodos test_ definidos.
+tests/test_lightva.py: 39 métodos test_ definidos.
+Total de métodos test_: 143. Resultado ejecutado: 143 tests, OK.
+
+ANEXO C. ARTEFACTOS ACADÉMICOS PRINCIPALES
+============================================================
+figuras/sigad_arquitectura_conceptual.png (1,559,833 bytes)
+figuras/sigad_arquitectura_motor_borrador.png (1,702,875 bytes)
+figuras/sigad_flujo_explicado.png (1,639,015 bytes)
+figuras/sigad_propuesta_guiado_v4.png (1,596,626 bytes)
+diagramas/ppdac_arbol.dot (2,243 bytes)
+Claude outputs/arquitectura_llm.png (446,372 bytes)
+Claude outputs/arquitectura_llm.svg (9,261 bytes)
+Claude outputs/fundamentacion_metodo_tesis.md (8,610 bytes)
+Claude outputs/los_4_fundamentos.png (136,899 bytes)
+Claude outputs/motor_adaptativo-1.py (9,624 bytes)
+Claude outputs/motor_adaptativo.py (8,318 bytes)
+Claude outputs/pipeline_motor_guidance.png (452,334 bytes)
+Claude outputs/pipeline_motor_guidance.svg (11,446 bytes)
+Claude outputs/pipeline_motor_guidance_v2.png (476,223 bytes)
+Claude outputs/pipeline_motor_guidance_v2.svg (11,933 bytes)
+Claude outputs/pipeline_motor_guidance_v3.png (695,099 bytes)
+Claude outputs/pipeline_motor_guidance_v3.svg (19,231 bytes)
+Claude outputs/pipeline_unificado.png (443,223 bytes)
+Claude outputs/pipeline_unificado.svg (17,085 bytes)
+Claude outputs/sigad_paper.tex (11,329 bytes)
+output/pdf/Informe_avance_SIGAD_fase_Problema.pdf (3,097,658 bytes)
+output/exposicion_papers/entrega/Exposicion_4_papers_SiGAD.pptx (3,585,312 bytes)
+output/exposicion_papers/entrega/Exposicion_8_diapositivas.pptx (1,134,742 bytes)
+output/exposicion_papers/entrega/Exposicion_8_diapositivas_ampliada.pptx (1,149,805 bytes)
+output/exposicion_papers/entrega/Guion_ampliado_8_diapositivas.md (21,656 bytes)
+output/exposicion_papers/entrega/Guion_exposicion.md (26,358 bytes)
+Fuente: /Users/xawii/Library/Mobile Documents/com~apple~CloudDocs/Tesis Proyecto/Code/Tesis-2026/Data/Data.csv
+SHA-256: ab1d6a356d6997a45f6d657ad47de1e05a4a08d4a7015b38a329a90665ab74d0
+Fuente: /Users/xawii/Library/Mobile Documents/com~apple~CloudDocs/Tesis Proyecto/Code/Tesis-2026/Readme.md
+SHA-256: 41f2fdd894457e2d49df1675d5a46a47d6b39f0d41a1084b9d9a2c08e73e111b
+Fuente: /Users/xawii/Library/Mobile Documents/com~apple~CloudDocs/Tesis Proyecto/Code/Tesis-2026/propuesta_sigad_revisada.md
+SHA-256: e8f2ae56199fb9bc3e8423eecd0320af1fb14cf1d052ddbeb5fead0175dfdcc3
+Fuente: /Users/xawii/Downloads/Articulo_Proyecto_Final-4 (1).pdf
+SHA-256: f3578b47faa775533733260af0e02140519b16fbbf37bad39e7cb2a9f5a0eb88
+Fuente: /Users/xawii/Downloads/revision tesis.pdf
+SHA-256: 80e9ef79f73c0ff1224b83d467e184528f5cd0b8c6ab94193269dbe03d85fbde

@@ -1,0 +1,52 @@
+// Árbol conceptual propuesto para SiGAD. Abrir en un visor Graphviz.
+// Las ramas de Análisis y Conclusiones representan diseño propuesto.
+digraph PPDAC {
+  graph [rankdir=LR, bgcolor="white", nodesep=0.20, ranksep=0.65, pad=0.3];
+  node [shape=box, style="rounded,filled", fillcolor="#F1F5F9", color="#CBD5E1", fontname="Arial", fontsize=11];
+  edge [color="#94A3B8"];
+  root [label="SiGAD\nCiclo PPDAC", fillcolor="#0F172A", fontcolor="white"];
+  p [label="1. Problema", fillcolor="#DBEAFE"];
+  pl [label="2. Plan", fillcolor="#EDE9FE"];
+  d [label="3. Datos", fillcolor="#DCFCE7"];
+  a [label="4. Análisis\n(propuesto)", fillcolor="#FEF3C7"];
+  c [label="5. Conclusiones\n(propuesto)", fillcolor="#FFE4E6"];
+  root -> {p pl d a c};
+  p -> {p1 p2 p3 p4};
+  p1 [label="Formular la pregunta"];
+  p2 [label="Delimitar población y periodo"];
+  p3 [label="Identificar variables pertinentes"];
+  p4 [label="Comprobar viabilidad"];
+  pl -> {pl1 pl2 pl3 pl4};
+  pl1 [label="Seleccionar variables"];
+  pl2 [label="Planificar revisión de calidad"];
+  pl3 [label="Decidir preparación y organización"];
+  pl4 [label="Justificar la estrategia"];
+  d -> {d1 d2 d3 d4};
+  d1 [label="Inspeccionar calidad"];
+  d2 [label="Limpieza"];
+  d3 [label="Escalado / normalización"];
+  d4 [label="Organización temporal"];
+  d2 -> {n o};
+  n [label="Valores faltantes"];
+  o [label="Valores atípicos (outliers)"];
+  n -> nm;
+  nm [label="Conservar / imputar / excluir\nsegún el contexto"];
+  o -> od;
+  od [label="Detectar candidatos: IQR"];
+  od -> ot;
+  ot [label="Revisar y decidir:\nconservar / limitar / excluir"];
+  d3 -> dm;
+  dm [label="Conservar escala o transformar\nsi el análisis lo requiere"];
+  d4 -> dt;
+  dt [label="Revisar fechas, orden y frecuencia"];
+  a -> {a1 a2 a3 a4};
+  a1 [label="Describir distribuciones\nResúmenes y gráficos"];
+  a2 [label="Comparar grupos\nComparaciones descriptivas"];
+  a3 [label="Explorar relaciones\nDispersión / correlación"];
+  a4 [label="Explorar patrones temporales\nEvolución / tendencias"];
+  c -> {c1 c2 c3 c4};
+  c1 [label="Responder la pregunta inicial"];
+  c2 [label="Sustentar con evidencia"];
+  c3 [label="Reconocer limitaciones"];
+  c4 [label="Comunicar y plantear nuevas preguntas"];
+}

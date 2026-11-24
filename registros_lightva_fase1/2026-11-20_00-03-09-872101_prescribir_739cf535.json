@@ -1,0 +1,70 @@
+{
+  "tarea": {
+    "id": "pregunta-investigacion",
+    "descripcion": "Formular y justificar una pregunta de investigación viable con el dataset disponible."
+  },
+  "nivel": 4,
+  "nombre_nivel": "Prescribir",
+  "evidencia": "Una pregunta delimitada y una justificación basada en las variables y la cobertura de los datos.",
+  "resumen_contexto": {
+    "filas": 35064,
+    "variables": [
+      "PM2.5"
+    ],
+    "vista": "evolucion",
+    "cobertura": {
+      "inicio": "2013-03-01T00:00:00",
+      "fin": "2017-02-28T23:00:00"
+    },
+    "exploraciones": [
+      "Se seleccionó la vista de evolución de PM2.5."
+    ],
+    "dificultades": [
+      "Falta delimitar el alcance temporal."
+    ],
+    "hay_respuesta": true
+  },
+  "subtareas": [
+    {
+      "id": "subtarea-1",
+      "proposito": "Delimitar el periodo de estudio para la variable PM2.5",
+      "variables": [
+        "PM2.5"
+      ],
+      "dependencias": [],
+      "evidencia": "El dataset cubre los años 2013‑2017 con observaciones completas para PM2.5.",
+      "criterios": [
+        "alcance"
+      ],
+      "intervencion": "Selecciona una ventana temporal válida (por ejemplo, 2013) y anótala como el periodo de estudio.",
+      "estado": "pendiente",
+      "respuesta": null,
+      "motivo_invalidacion": null
+    }
+  ],
+  "intervencion": "Revisa la propuesta de pregunta y confirma o ajusta el periodo de estudio.",
+  "alternativas": [],
+  "propuesta": {
+    "texto": "¿Cómo varía la concentración de PM2.5 a lo largo del el periodo indicado?",
+    "explicacion": "Esta pregunta delimita claramente el periodo (el periodo indicado) y la variable (PM2.5), y es respondible con la operación de resumen temporal disponible.",
+    "variables": [
+      "PM2.5"
+    ],
+    "operacion": "resumen_temporal",
+    "ventana": "2013",
+    "periodo": {
+      "inicio": "2013-03-01T00:00:00",
+      "fin": "2013-12-31T23:00:00"
+    }
+  },
+  "aclaraciones": [
+    "La ventana propuesta (2013) está cubierta por el dataset y permite aplicar la operación resumen_temporal sin problemas."
+  ],
+  "registro": {
+    "fecha_hora": "2026-11-20T00:03:09.872101-05:00",
+    "nivel": "prescribir",
+    "csv": "Data.csv",
+    "resultado": "validado",
+    "error": null
+  }
+}
