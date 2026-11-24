@@ -10,6 +10,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 from flask import jsonify, request
+from agente import CredencialGroqAusente
 from motor_fase1 import HABILIDADES, RUBRICA, MotorFase1
 
 VARIABLES = {
@@ -303,7 +304,7 @@ def validar_evaluacion(resultado, columnas):
         for criterio in resultado["criterios"].values()
     )
     utilizadas = resultado.get("variables_utilizadas")
-    if not isinstance(utilizadas, list) or not utilizadas or any(not isinstance(c, str) or c not in columnas for c in utilizadas):
+    if not isinstance(utilizadas, list) or any(not isinstance(c, str) or c not in columnas for c in utilizadas) or (resultado["es_viable"] and not utilizadas):
         raise ValueError("El evaluador devolvió variables inexistentes o un esquema incompleto.")
     if not isinstance(resultado.get("feedback"), str) or not resultado["feedback"].strip():
         raise ValueError("Falta retroalimentación.")
@@ -791,6 +792,12 @@ def registrar_fase1(app, df, evaluar, recomendar=None, prescribir=None, generar_
                                type(error).__name__, status)
             with lock:
                 s["ocupada"] = False
+            if isinstance(error, CredencialGroqAusente):
+                return jsonify(error="Falta la clave de Groq. Configura GROQ_API_KEY u OPENAI_API_KEY "
+                                     "en .env y reinicia SiGAD.", codigo="proveedor_sin_clave"), 503
+            if status in (401, 403):
+                return jsonify(error="Groq rechazó el acceso. Revisa la clave y los permisos del modelo.",
+                               codigo="proveedor_autenticacion"), 502
             if status == 429:
                 return jsonify(error="La IA alcanzó su límite de uso. Tu pregunta sigue en el formulario. "
                                      "Puedes reintentar cuando se restablezca la cuota.",

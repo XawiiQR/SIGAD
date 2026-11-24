@@ -568,8 +568,12 @@ específico; no agregues fechas, filtros ni técnicas al reformularla.
 Incluye criterios con las cuatro claves anteriores, cada una con puntuacion y
 explicacion breve. Vistas: evolucion, ciclicidad, distribucion, variabilidad,
 relaciones, frecuencias y comparacion. Si el análisis no requiere otra vista,
-conserva la seleccionada. Si falta definir la variable, conserva la seleccionada
-solo como referencia en variables_utilizadas.
+conserva la seleccionada. En variables_utilizadas lista únicamente las columnas
+existentes que correspondan a la pregunta. Si ninguna corresponde, devuelve [].
+Si se menciona una variable que no existe, indica cuál falta en feedback,
+puntúa variables y viabilidad por debajo de 2 y conserva la variable original
+en pregunta_formulada. No confundas CO (monóxido de carbono) con CO2
+(dióxido de carbono).
 """
 
 

@@ -1,10 +1,12 @@
 import copy
 import json
+import os
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pandas as pd
 from flask import Flask
+from agente import CredencialGroqAusente, MotorAnalisis
 from fase1 import (Explorador, registrar_fase1, validar_evaluacion,
                    validar_prescripcion, validar_recomendaciones)
 from motor_fase1 import HABILIDADES, MotorFase1
@@ -328,6 +330,35 @@ class TestAPI(unittest.TestCase):
             self.assertEqual(self.evaluar().status_code,502)
             estado=self.client.get('/api/fase1/estado',headers=self.headers).get_json()
             self.assertEqual(estado['motor'],before);self.assertEqual(estado['revision'],0)
+
+    def test_clave_groq_y_error_sin_configuracion(self):
+        with patch.dict(os.environ, {"GROQ_API_KEY": "clave-de-prueba"}, clear=True):
+            with patch("agente.OpenAI") as cliente:
+                MotorAnalisis()
+                self.assertEqual(cliente.call_args.kwargs["api_key"], "clave-de-prueba")
+
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(CredencialGroqAusente):
+                MotorAnalisis()
+
+        self.evaluador.side_effect = CredencialGroqAusente()
+        respuesta = self.evaluar()
+        self.assertEqual(respuesta.status_code, 503)
+        self.assertEqual(respuesta.get_json()["codigo"], "proveedor_sin_clave")
+        estado = self.client.get("/api/fase1/estado", headers=self.headers).get_json()
+        self.assertEqual(estado["motor"], self.estado["motor"])
+        self.assertEqual(estado["revision"], self.estado["revision"])
+
+    def test_pregunta_con_variable_ausente_recibe_retroalimentacion(self):
+        evaluacion = rubrica(0)
+        evaluacion["variables_utilizadas"] = []
+        evaluacion["pregunta_formulada"] = "¿Cómo evoluciona el CO2?"
+        evaluacion["feedback"] = "El dataset no contiene CO2."
+        self.evaluador.return_value = evaluacion
+        respuesta = self.evaluar(pregunta=evaluacion["pregunta_formulada"])
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertFalse(respuesta.get_json()["completada"])
+        self.assertEqual(respuesta.get_json()["resultado"]["feedback"], evaluacion["feedback"])
 
     def test_repeticion_idempotente(self):
         first=self.evaluar().get_json(); second=self.evaluar().get_json()
