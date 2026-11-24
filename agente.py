@@ -8,11 +8,18 @@ from dotenv import load_dotenv
 # 1. Cargar configuración
 load_dotenv()
 
+class CredencialGroqAusente(RuntimeError):
+    """No hay una clave configurada para el cliente Groq."""
+
+
 class MotorAnalisis:
     def __init__(self):
         # La dirección base de tu servidor API
         self.base_url = "http://127.0.0.1:5000/api"
-        self.client = OpenAI(base_url="https://api.groq.com/openai/v1")
+        clave = os.getenv("GROQ_API_KEY", "").strip() or os.getenv("OPENAI_API_KEY", "").strip()
+        if not clave:
+            raise CredencialGroqAusente("Configura GROQ_API_KEY u OPENAI_API_KEY.")
+        self.client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=clave)
         # Alternativa a GPT-OSS cuando ese modelo alcanza su cupo diario en Groq.
         self.modelo = "openai/gpt-oss-20b"
 
